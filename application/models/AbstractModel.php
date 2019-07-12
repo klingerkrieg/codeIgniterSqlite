@@ -4,6 +4,12 @@ class AbstractModel extends CI_Model {
 
 	public $table = "";
 	public $fields = [""];
+	public $searchFields = [];
+
+
+	function decamelize($string) {
+		return strtolower(preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1_$2', $string));
+	}
 	
 	//recebo a id do elemento que quero abrir
 	public function get($id = null){
@@ -30,15 +36,28 @@ class AbstractModel extends CI_Model {
 	}
 
 	//recebe o número da página que será exibida, inicia na 1
-	public function pagination($page){
+	public function pagination($page, $busca = null){
 		
 		//Quantidade de itens por pagina
 		$max_items_per_page = 10;
 		$loc = ($page-1) * $max_items_per_page;
 
+		$where = [];
+		$values = [];
+		if ($busca != null){
+			#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields
+			$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
+			
+			foreach($fields as $field ){
+				array_push($where, $field." like ?");
+				array_push($values,"%".$busca."%");
+			}
+		}
+		$where = implode(" or ", $where);
+
 		//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
-		$list = R::findAll($this->table , " ORDER BY " . $this->fields[0] 
-						. " LIMIT $loc,$max_items_per_page " );
+		$list = R::findAll($this->table , $where . " ORDER BY " . $this->decamelize($this->fields[0]) 
+						. " LIMIT $loc,$max_items_per_page ", $values );
 		
 		//Recupera a quantidade total de itens na tabela
 		$qtd = R::count($this->table);
@@ -63,6 +82,15 @@ class AbstractModel extends CI_Model {
 	}
 
 
+	public function preSave($obj, $data){
+		return $obj;
+	}
+
+	public function posSave($obj, $data){
+		
+	}
+
+
 	public function save($data=null) {
 		
 		if ($data == null){
@@ -77,9 +105,14 @@ class AbstractModel extends CI_Model {
 		foreach($fields as $key=>$val){
 			$obj[$key] = $val;
 		}
+
+		$obj = $this->preSave($obj, $data);
 		
-		
-		return R::store($obj);
+		$id = R::store($obj);
+
+		$this->posSave($obj, $data);
+
+		return $id;
 	}
 
 

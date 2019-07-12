@@ -6,21 +6,8 @@ class Usuario_model extends AbstractModel {
         public $fields = ["nome","email","senha"];
 		
 		
-        public function save($data=null) {
+        public function preSave($obj,$data) {
 
-			if ($data == null){
-				$data = $_POST;
-			}
-			
-			$fields = prepare_fields($this->fields, $data);
-			
-			$obj = R::load($this->table, val($data,'id'));
-			
-			
-			foreach($fields as $key=>$val){
-				$obj[$key] = $val;
-			}
-			
 			if ($obj["senha"] != ""){
 				//criptografa a senha
 				$obj["senha"] = sha1($obj["senha"]);
@@ -29,7 +16,7 @@ class Usuario_model extends AbstractModel {
 				unset($obj["senha"]);
 			}
 			
-			return R::store($obj);
+			return $obj;
         }
 
 
