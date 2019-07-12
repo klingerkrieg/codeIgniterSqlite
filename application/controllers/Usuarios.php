@@ -1,61 +1,157 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Usuarios extends CI_Controller { //<----- O nome da classe, 
-	// sempre deve ser igual ao nome do arquivo
-	
+class Usuarios extends CI_Controller {
 
-	//Construtor da classe
+	#nome do campo de upload no formulario
+	private $upload_name = "foto";
+	#a variavel que vai receber o nome do arquivo que foi feito o upload
+	private $upload_result = null;
+	
 	public function __construct(){
-			parent::__construct(); //Sempre deverá ter essa linha,
-			//para construir aos moldes do CodeIgniter
-			
-			//Sempre que iniciar essa classe, ele carregará o model de Usuario
-			$this->load->model("Usuario_model");
+		parent::__construct();
+		
+		//Carrega o Model de usuario
+		$this->load->model("Usuario_model");
+
+		#verifica se o usuário fez o login corretamente
+		if (!isset($_SESSION["email"])){
+			redirect("login/index/");
+		}
 	}
 	
 	
-	//a função index sempre será a função principal do arquivo
-	//ela é aquela função que será acessada se o usuário digitar somente o nome do controller
-	//http://localhost/sqlite/index.php/usuarios/
-	public function index($id=null) { //recebo a id do usuario via parâmetro
+	//página principal
+	public function index($id=null) {
 
-		//verifico se foi passada alguma página para
-		//ser exibida, caso não tenha sido passada
-		//irá para a página 1
-		//isso porque a tabela só mostra 10 registros
-		//de cada vez, sendo assim, podem existir várias páginas
-		//a primeira página, mostra os primeiros 10, a segunda página mostra os próximos
 		if (isset($_GET['page'])){
 			$page = $_GET['page'];
 		} else {
 			$page = 1;
 		}
 		
-		//Utilizo o model para receber todos os registros do banco de dados
-		//porém de forma paginada, traga somente os registros da pagina X
-		$pag = $this->Usuario_model->pagination($page);
+		//busca todos os registros para a listagem
+		$pag = $this->Usuario_model->pagination($page, val($_GET,"busca"));
 		
-		//Se eu tiver enviado a id de algum individuo
-		//O model usuario irá trazer os dados desse usuário
-		//Para que ele seja exibido no formulário
+		//se for para abrir algum registro
 		$dados = $this->Usuario_model->get($id);
-		
+		//se tiver dado erro de validacao, pega os dados do POST
+		//para isso verifico se o campo id existe no POST
+		if (isset($_POST['id'])){
+			$dados = $_POST;
+		}
 
-		//Chamo a VIEW
+		//recupera todos os setores para o select de setor
+		$this->load->model("Setor_model");
+		$setores = $this->Setor_model->all();
+
+		//recupera os tipos possiveis de usuarios
+		$tiposUsuarios = $this->Usuario_model->tiposUsuarios;
+		
 		$this->load->view('usuarios', ["list"=>$pag["list"],
 										"qtd"=>$pag["qtd"],
 										"page"=>$page,
-										"dados"=>$dados]);
+										"dados"=>$dados,
+										"setores"=>$setores,
+										"tiposUsuarios"=>$tiposUsuarios]);
 		
+	}
+
+
+	private function cleanString($text) {
+		$utf8 = array(
+			'/[áàâãªä]/u'   =>   'a',
+			'/[ÁÀÂÃÄ]/u'    =>   'A',
+			'/[ÍÌÎÏ]/u'     =>   'I',
+			'/[íìîï]/u'     =>   'i',
+			'/[éèêë]/u'     =>   'e',
+			'/[ÉÈÊË]/u'     =>   'E',
+			'/[óòôõºö]/u'   =>   'o',
+			'/[ÓÒÔÕÖ]/u'    =>   'O',
+			'/[úùûü]/u'     =>   'u',
+			'/[ÚÙÛÜ]/u'     =>   'U',
+			'/ç/'           =>   'c',
+			'/Ç/'           =>   'C',
+			'/ñ/'           =>   'n',
+			'/Ñ/'           =>   'N',
+			'/\./'           =>   '_',
+			'/–/'           =>   '-', // UTF-8 hyphen to "normal" hyphen
+			'/[’‘‹›‚]/u'    =>   ' ', // Literally a single quote
+			'/[“”«»„]/u'    =>   ' ', // Double quote
+			'/ /'           =>   ' ', // nonbreaking space (equiv. to 0x160)
+		);
+		return preg_replace(array_keys($utf8), array_values($utf8), $text);
+	}
+	
+
+	
+
+	public function upload_check($v){
+
+		#local onde salvará o arquivo sqlite/uploads/
+		$config['upload_path']          = "./uploads/";
+		$config['allowed_types']        = 'jpg|jpeg|png';
+		$config['max_size']             = 1000;
+		#limpa os caracteres especiais do nome do arquivo
+		$config['file_name']            = $this->cleanString($_FILES[$this->upload_name]["name"]);
+
+		$this->load->library('upload', $config);
+		#faz o upload
+		if ( ! $this->upload->do_upload($this->upload_name)){
+			$this->form_validation->set_message('upload_check', $this->upload->display_errors());
+			return false;
+		} else {
+			#salva o novo nome do arquivo
+			$this->upload_result = $this->upload->data();
+			return true;
+		}
 	}
 	
 	
-	
 	public function salvar(){
-		$id = $this->Usuario_model->save();
+
+		#upload de foto com validacao
+		if (isset($_FILES[$this->upload_name]) && $_FILES[$this->upload_name]["name"] != ""){
+			#o arquivo será salvo e feita a validacao
+			$this->form_validation->set_rules($this->upload_name, 'Foto', 'callback_upload_check');
+		}
+
+
+		#a senha so sera validada se for num novo registro
+		#ou se enviado algo diferente de branco
+		#pq quando ela nao é enviada, significa que nao é pra alterar
+		if (val($_POST,"senha") != "" || val($_POST,"id") == ""){
+			$this->form_validation->set_rules('senha', 'Senha', 'min_length[6]',
+					array('min_length' => 'Defina uma senha com no mínimo 6 dígitos.')
+			);
+			$this->form_validation->set_rules('senhaConfirm', 'Confirmação da senha', 'required|matches[senha]');
+		}
+		$this->form_validation->set_rules('nome', 'Nome', 'required');
+		$this->form_validation->set_rules('email', 'E-mail', 'required|valid_email');
+		$this->form_validation->set_rules('setores_id', 'Setor', 'required');
+
 		
-		redirect("usuarios/index/" . $id );
+		if ($this->form_validation->run() == FALSE) {
+			$this->index();
+		} else {
+
+			#insere o nome do arquivo que foi feito o upload
+			#para ser salvo no banco de dados
+			#nesse momento o arquivo ja se encontra em sqlite/uploads/
+			$_POST["foto"] = $this->upload_result["file_name"];
+
+
+			$obj = $this->Usuario_model->save();
+
+			#mensagem de confirmação
+			if ($obj == ""){
+				$this->session->set_flashdata("error","<div class='ui red message'>Falha ao salvar.</div>");
+			} else {
+				$this->session->set_flashdata("success","<div class='ui green message'>Salvo com sucesso.</div>");
+			}
+
+			redirect("usuarios/index/" . $obj );
+		}
 	}
 	
 	
@@ -63,7 +159,7 @@ class Usuarios extends CI_Controller { //<----- O nome da classe,
 	
 	public function deletar($id){
 		$this->Usuario_model->delete($id);
-		
+		$this->session->set_flashdata("warning","<div class='ui yellow message'>Registro deletado.</div>");
 		redirect("usuarios/index");
 		
 	}
