@@ -1,5 +1,5 @@
 ###################
-CodeIgniter e SQLite
+CodeIgniter e SQLite 1.1
 ###################
 
 
