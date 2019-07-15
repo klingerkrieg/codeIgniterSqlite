@@ -29,6 +29,7 @@ class Usuario_model extends AbstractModel {
 				$obj->setores = $set;
 			}
 
+			//A função preSave sempre deve retornar o $obj
 			return $obj;
 		}
 		
