@@ -1,10 +1,22 @@
 <?php
 
+
+
+
 class AbstractModel extends CI_Model {
 
+	#nomes de tabelas e campos nao podem ter _ - ou letras maiusculas
 	public $table = "";
 	public $fields = [""];
 	public $searchFields = [];
+
+	#para fazer associacoes entre tabelas
+	#defina uma matriz com os relacionamentos [['table'=>'usuarios', 'key'=>'usuario_id'], ...]
+	public $oneToMany = false;
+	public $manyToOne = false;
+	#a matriz do manyToMany requer 3 itens
+	#[['table'=>'usuarios', 'key'=>'usuario_id', 'assocTable'=>'gruposusuarios'], ...]
+	public $manyToMany = false;
 
 
 	function decamelize($string) {
@@ -49,7 +61,7 @@ class AbstractModel extends CI_Model {
 			$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
 			
 			foreach($fields as $field ){
-				array_push($where, $field." like ?");
+				array_push($where, $this->decamelize($field)." like ?");
 				array_push($values,"%".$busca."%");
 			}
 		}
@@ -104,6 +116,51 @@ class AbstractModel extends CI_Model {
 		
 		foreach($fields as $key=>$val){
 			$obj[$key] = $val;
+		}
+
+		#verifica se existe relacionamentos
+		if ($this->oneToMany){
+			foreach($this->oneToMany as $rel){
+				if (val($data,$rel["key"]) != "" ){
+					#recupera o item da tabela
+					$another = R::load($rel["table"], $data[$rel["key"]]);
+					#para relacionar um para muitos utilize essa notacao
+					#own+NomeDaTabela+List
+					#essa propriedade sera um array com varios daquele model que voce adicionar
+					$tblName = "own" . ucfirst($rel["table"]) . "List";
+					$obj->$tblName[] = $another;
+				}
+			}
+		}
+
+		if ($this->manyToOne){
+			foreach($this->manyToOne as $rel){
+				if (val($data,$rel["key"]) != ""){
+					#recupera o item da tabela
+					$another = R::load($rel["table"],$data[$rel["key"]]);
+					$tblName = $rel["table"];
+					#associa o item
+					$obj->$tblName = $another;
+				}
+			}
+		}
+
+		if ($this->manyToMany){
+			foreach($this->manyToMany as $rel){
+				if (val($data,$rel["key"]) != "" ){
+					#recupera o item da tabela
+					$another = R::load($rel["table"], $data[$rel["key"]]);
+					#cria a tabela de associacao
+					$assoc = R::dispense($rel["assocTable"]);
+					#associa os itens
+					$tbl1 = $rel["table"];
+					$tbl2 = $this->table;
+					$assoc->$tbl1 = $another;
+					$assoc->$tbl2 = $obj;
+
+					R::Store($assoc);
+				}
+			}
 		}
 
 		$obj = $this->preSave($obj, $data);
