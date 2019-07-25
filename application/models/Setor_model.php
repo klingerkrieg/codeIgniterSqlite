@@ -1,29 +1,17 @@
 <?php
 
+
 class Setor_model extends AbstractModel {
 
+		#nomes de tabelas e campos nao podem ter _ - ou letras maiusculas
 		public $table = "setores";
-        public $fields = ["nome"];
+		public $fields = ["nome"];
 		
+		#um setor pode ter varios usuarios
+		#a key é o campo no formulário que contém a id do usuário
+		public $oneToMany = [["table"=>"usuarios", "key"=>"pessoa_id"]];
 
 
-        public function preSave($obj, $data) {
-
-			#salva a pessoa no setor
-			if (val($data,'pessoa_id') != "" ){
-				$usu = R::load("usuarios", $data['pessoa_id']);
-				#para relacionar um para muitos utilize essa notacao
-				#own+NomeDaTabela+List
-				#essa propriedade sera um array com varios daquele model que voce adicionar
-				$obj->ownUsuariosList[] = $usu;
-
-				#tambem seria possivel fazer
-				#$usu->setores = $obj;
-				#R::store($usu);
-			}
-			
-			return $obj;
-		}
 		
 		public function remove_usuario($id_setor,$id_usuario){
 			$obj = R::load($this->table, $id_setor);
