@@ -39,7 +39,8 @@ class Grupos extends CI_Controller {
 
 		//Seleciona todas as pessoas que ainda nao estao naquele Grupo
 		$this->load->model("Usuario_model");
-		$pessoas = $this->Usuario_model->findNotInGrupo($id);
+		#$pessoas = $this->Usuario_model->findNotInGrupo($id);
+		$pessoas = $this->Usuario_model->all();
 		
 		$this->load->view('grupos', ["list"=>$pag["list"],
 										"qtd"=>$pag["qtd"],

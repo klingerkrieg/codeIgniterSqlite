@@ -40,7 +40,8 @@ class Setores extends CI_Controller {
 
 		//Seleciona todas as pessoas que ainda nao estao naquele setor
 		$this->load->model("Usuario_model");
-		$pessoas = $this->Usuario_model->findNotInSetor($id);
+		#$pessoas = $this->Usuario_model->findNotInSetor($id);
+		$pessoas = $this->Usuario_model->all();
 		
 		$this->load->view('setores', ["list"=>$pag["list"],
 										"qtd"=>$pag["qtd"],
