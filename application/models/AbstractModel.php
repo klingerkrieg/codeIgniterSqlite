@@ -47,37 +47,36 @@ class AbstractModel extends CI_Model {
 		return R::findOne($this->table,$where,$whereData);
 	}
 
-	//recebe o número da página que será exibida, inicia na 1
-	public function pagination($page, $busca = null){
-		
-		//Quantidade de itens por pagina
-		$max_items_per_page = 10;
-		$loc = ($page-1) * $max_items_per_page;
+//recebe o número da página que será exibida, inicia na 1
+public function pagination($per_page, $page, $busca = null){
 
-		$where = [];
-		$values = [];
-		if ($busca != null){
-			#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields
-			$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
-			
-			foreach($fields as $field ){
-				array_push($where, $this->decamelize($field)." like ?");
-				array_push($values,"%".$busca."%");
-			}
+	//Quantidade de itens por pagina
+	$loc = ($page-1) * $per_page;
+
+	$where = [];
+	$values = [];
+	if ($busca != null){
+		#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields
+		$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
+		
+		foreach($fields as $field ){
+			array_push($where, $this->decamelize($field)." like ?");
+			array_push($values,"%".$busca."%");
 		}
-		$where = implode(" or ", $where);
-
-		//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
-		$list = R::findAll($this->table , $where . " ORDER BY " . $this->decamelize($this->fields[0]) 
-						. " LIMIT $loc,$max_items_per_page ", $values );
-		
-		//Recupera a quantidade total de itens na tabela
-		$qtd = R::count($this->table, $where, $values );
-		
-		//Retorna um array com a list, registros na página,
-		//e a quantidade total de itens.
-		return ["list"=>$list,"qtd"=>$qtd];
 	}
+	$where = implode(" or ", $where);
+	
+	//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
+	$list = R::findAll($this->table , $where . " ORDER BY " . $this->decamelize($this->fields[0]) 
+					. " LIMIT $loc,$per_page ", $values );
+	
+	//Recupera a quantidade total de itens na tabela
+	$qtd = R::count($this->table, $where, $values );
+	
+	//Retorna um array com a list, registros na página,
+	//e a quantidade total de itens.
+	return ["data"=>$list,"total_rows"=>$qtd, "per_page"=>$per_page, "page_max"=>ceil($qtd/$per_page)];
+}
 	
 	
 	public function all(){

@@ -26,7 +26,7 @@ class Grupos extends CI_Controller {
 		}
 		
 		//busca todos os registros para a listagem
-		$pag = $this->Grupo_model->pagination($page, val($_GET,"busca"));
+		$listaPaginada = $this->Grupo_model->pagination($this->config->item("per_page"), $page, val($_GET,"busca"));
 
 		//se for para abrir algum registro
 		$dados = $this->Grupo_model->get($id);
@@ -42,9 +42,7 @@ class Grupos extends CI_Controller {
 		#$pessoas = $this->Usuario_model->findNotInGrupo($id);
 		$pessoas = $this->Usuario_model->all();
 		
-		$this->load->view('grupos', ["list"=>$pag["list"],
-										"qtd"=>$pag["qtd"],
-										"page"=>$page,
+		$this->load->view('grupos', ["listaPaginada"=>$listaPaginada,
 										"dados"=>$dados,
 										"pessoas"=>$pessoas]);
 		

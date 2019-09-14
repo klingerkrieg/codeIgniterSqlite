@@ -1,7 +1,7 @@
 <?php
 
 $config['base_url'] = null;
-$config['per_page'] = 10;
+$config['first_url'] = "?page=1";
 $config['use_page_numbers'] = true;
 $config['enable_query_strings'] = true;
 $config['page_query_string'] = true;

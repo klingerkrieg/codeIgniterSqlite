@@ -31,7 +31,7 @@ class Usuarios extends CI_Controller {
 		}
 		
 		//busca todos os registros para a listagem
-		$pag = $this->Usuario_model->pagination($page, val($_GET,"busca"));
+		$listaPaginada = $this->Usuario_model->pagination($this->config->item("per_page"), $page, val($_GET,"busca"));
 		
 		//se for para abrir algum registro
 		$dados = $this->Usuario_model->get($id);
@@ -48,9 +48,7 @@ class Usuarios extends CI_Controller {
 		//recupera os tipos possiveis de usuarios
 		$tiposUsuarios = $this->Usuario_model->tiposUsuarios;
 		
-		$this->load->view('usuarios', ["list"=>$pag["list"],
-										"qtd"=>$pag["qtd"],
-										"page"=>$page,
+		$this->load->view('usuarios', ["listaPaginada"=>$listaPaginada,
 										"dados"=>$dados,
 										"setores"=>$setores,
 										"tiposUsuarios"=>$tiposUsuarios]);

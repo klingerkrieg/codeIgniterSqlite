@@ -105,7 +105,7 @@ foreach($dados->ownGruposusuariosList as $groupList){
 	
 <?php
 
-foreach($list as $ln){
+foreach($listaPaginada["data"] as $ln){
 	
 	print "<tr>";
 	
@@ -119,25 +119,22 @@ foreach($list as $ln){
 }
 
 #paginacao
-$page_max = ceil($qtd/10);
-
-$config['total_rows'] = $qtd;
-$this->pagination->initialize($config);
+$this->pagination->initialize($listaPaginada);
 ?>
-	<tfoot>
-	<tr>
-		<th colspan="5">
-		<span class="ui label">
-			Total: <?=$qtd?>
-		</span>
-		<?php if ($qtd > $config['total_rows']): ?>
-			<div class="ui right floated pagination menu">
-				<?=$this->pagination->create_links()?>
-			</div>
-		<?php endif; ?>
-		</th>
-	</tr>
-	</tfoot>
+<tfoot>
+<tr>
+	<th colspan="5">
+	<span class="ui label">
+		Total: <?=$listaPaginada["total_rows"]?>
+	</span>
+	<?php if ($listaPaginada["page_max"] > 1): ?>
+		<div class="ui right floated pagination menu">
+			<?=$this->pagination->create_links()?>
+		</div>
+	<?php endif; ?>
+	</th>
+</tr>
+</tfoot>
 </tbody>
 </table>
 

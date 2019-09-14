@@ -28,7 +28,7 @@ class Setores extends CI_Controller {
 
 		
 		//busca todos os registros para a listagem
-		$pag = $this->Setor_model->pagination($page, val($_GET,"busca"));
+		$listaPaginada = $this->Setor_model->pagination($this->config->item("per_page"), $page, val($_GET,"busca"));
 
 		//se for para abrir algum registro
 		$dados = $this->Setor_model->get($id);
@@ -43,9 +43,7 @@ class Setores extends CI_Controller {
 		#$pessoas = $this->Usuario_model->findNotInSetor($id);
 		$pessoas = $this->Usuario_model->all();
 		
-		$this->load->view('setores', ["list"=>$pag["list"],
-										"qtd"=>$pag["qtd"],
-										"page"=>$page,
+		$this->load->view('setores', ["listaPaginada"=>$listaPaginada,
 										"dados"=>$dados,
 										"pessoas"=>$pessoas]);
 		
