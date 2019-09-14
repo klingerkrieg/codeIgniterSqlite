@@ -73,8 +73,8 @@ public function pagination($per_page, $page, $busca = null){
 	//Recupera a quantidade total de itens na tabela
 	$qtd = R::count($this->table, $where, $values );
 	
-	//Retorna um array com a list, registros na página,
-	//e a quantidade total de itens.
+	//Retorna um array com os dados, total de registros,
+	//qtd de itens por pagina e a quantidade máxima de páginas
 	return ["data"=>$list,"total_rows"=>$qtd, "per_page"=>$per_page, "page_max"=>ceil($qtd/$per_page)];
 }
 	
