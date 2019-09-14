@@ -26,6 +26,12 @@ function val($arr,$key){
 }
 
 
+function saveLogs(){
+	$logs = R::getDatabaseAdapter()->getDatabase()->getLogger()->getLogs();
+	$_SESSION["logs"] = $logs;
+}
+
+
  
 class Rb {
      

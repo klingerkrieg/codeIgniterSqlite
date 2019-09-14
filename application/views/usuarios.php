@@ -52,7 +52,7 @@
 	
 <?php
 
-foreach($list as $ln){
+foreach($listaPaginada["data"] as $ln){
 	
 	print "<tr>";
 	
@@ -67,22 +67,23 @@ foreach($list as $ln){
 }
 
 
-#paginacao, se houver mais de uma página a paginação aparecerá
-$page_max = ceil($qtd/10);
-if ($page_max > 1):
-	$config['total_rows'] = $qtd;
-	$this->pagination->initialize($config);
+#paginacao
+$this->pagination->initialize($listaPaginada);
 ?>
 	<tfoot>
 	<tr>
 		<th colspan="5">
-		<div class="ui right floated pagination menu">
-			<?=$this->pagination->create_links()?>
-		</div>
+		<span class="ui label">
+			Total: <?=$listaPaginada["total_rows"]?>
+		</span>
+		<?php if ($listaPaginada["page_max"] > 1): ?>
+			<div class="ui right floated pagination menu">
+				<?=$this->pagination->create_links()?>
+			</div>
+		<?php endif; ?>
 		</th>
 	</tr>
 	</tfoot>
-<?php endif; ?>
 </tbody>
 </table>
 

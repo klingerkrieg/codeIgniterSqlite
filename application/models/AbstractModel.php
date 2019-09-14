@@ -48,10 +48,10 @@ class AbstractModel extends CI_Model {
 	}
 
 	//recebe o número da página que será exibida, inicia na 1
-	public function pagination($page, $busca = null){
+	public function pagination($per_page, $page, $busca = null){
 		
 		//Quantidade de itens por pagina
-		$max_items_per_page = 10;
+		$max_items_per_page = $per_page;
 		$loc = ($page-1) * $max_items_per_page;
 
 		$where = [];
@@ -72,11 +72,11 @@ class AbstractModel extends CI_Model {
 						. " LIMIT $loc,$max_items_per_page ", $values );
 		
 		//Recupera a quantidade total de itens na tabela
-		$qtd = R::count($this->table);
+		$qtd = R::count($this->table, $where, $values );
 		
 		//Retorna um array com a list, registros na página,
 		//e a quantidade total de itens.
-		return ["list"=>$list,"qtd"=>$qtd];
+		return ["data"=>$list,"total_rows"=>$qtd, "per_page"=>$per_page, "page_max"=>ceil($qtd/$per_page)];
 	}
 	
 	

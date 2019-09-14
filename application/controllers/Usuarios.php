@@ -34,7 +34,7 @@ class Usuarios extends CI_Controller { //<----- O nome da classe,
 		
 		//Utilizo o model para receber todos os registros do banco de dados
 		//porém de forma paginada, traga somente os registros da pagina X
-		$pag = $this->Usuario_model->pagination($page);
+		$listaPaginada = $this->Usuario_model->pagination($this->config->item("per_page"), $page);
 		
 		//Se eu tiver enviado a id de algum individuo
 		//O model usuario irá trazer os dados desse usuário
@@ -43,8 +43,7 @@ class Usuarios extends CI_Controller { //<----- O nome da classe,
 		
 
 		//Chamo a VIEW
-		$this->load->view('usuarios', ["list"=>$pag["list"],
-										"qtd"=>$pag["qtd"],
+		$this->load->view('usuarios', ["listaPaginada"=>$listaPaginada,
 										"page"=>$page,
 										"dados"=>$dados]);
 		
