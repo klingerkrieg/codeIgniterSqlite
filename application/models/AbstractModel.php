@@ -27,6 +27,22 @@ class AbstractModel extends CI_Model {
 	public function get($id = null){
 		if ($id == null){
 			//se a id for nula, retorna um array vazio
+
+			//se houver id no POST, provavelmente é porque houve erro de validacao
+			//retorna os dados que foram submetidos pelo formulário
+			if (isset($_POST['id']) && $_POST['id'] != ""){
+				$data = $_POST;
+				$state = $this->get($_POST['id']);
+		
+				foreach($_POST as $key=>$val){
+					if ( isset($state[$key]) ){
+						$state[$key] = $_POST[$key];
+					}
+				}
+				$data = $state;
+				return $data;
+			}
+
 			return [];
 		} else {
 			//caso contrário, busca no banco
@@ -47,37 +63,36 @@ class AbstractModel extends CI_Model {
 		return R::findOne($this->table,$where,$whereData);
 	}
 
-	//recebe o número da página que será exibida, inicia na 1
-	public function pagination($per_page, $page, $busca = null){
-		
-		//Quantidade de itens por pagina
-		$max_items_per_page = $per_page;
-		$loc = ($page-1) * $max_items_per_page;
+//recebe o número da página que será exibida, inicia na 1
+public function pagination($per_page, $page, $busca = null){
 
-		$where = [];
-		$values = [];
-		if ($busca != null){
-			#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields
-			$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
-			
-			foreach($fields as $field ){
-				array_push($where, $this->decamelize($field)." like ?");
-				array_push($values,"%".$busca."%");
-			}
+	//Quantidade de itens por pagina
+	$loc = ($page-1) * $per_page;
+
+	$where = [];
+	$values = [];
+	if ($busca != null){
+		#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields
+		$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
+		
+		foreach($fields as $field ){
+			array_push($where, $this->decamelize($field)." like ?");
+			array_push($values,"%".$busca."%");
 		}
-		$where = implode(" or ", $where);
-
-		//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
-		$list = R::findAll($this->table , $where . " ORDER BY " . $this->decamelize($this->fields[0]) 
-						. " LIMIT $loc,$max_items_per_page ", $values );
-		
-		//Recupera a quantidade total de itens na tabela
-		$qtd = R::count($this->table, $where, $values );
-		
-		//Retorna um array com a list, registros na página,
-		//e a quantidade total de itens.
-		return ["data"=>$list,"total_rows"=>$qtd, "per_page"=>$per_page, "page_max"=>ceil($qtd/$per_page)];
 	}
+	$where = implode(" or ", $where);
+	
+	//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
+	$list = R::findAll($this->table , $where . " ORDER BY " . $this->decamelize($this->fields[0]) 
+					. " LIMIT $loc,$per_page ", $values );
+	
+	//Recupera a quantidade total de itens na tabela
+	$qtd = R::count($this->table, $where, $values );
+	
+	//Retorna um array com os dados, total de registros,
+	//qtd de itens por pagina e a quantidade máxima de páginas
+	return ["data"=>$list,"total_rows"=>$qtd, "per_page"=>$per_page, "page_max"=>ceil($qtd/$per_page)];
+}
 	
 	
 	public function all(){
@@ -152,13 +167,20 @@ class AbstractModel extends CI_Model {
 					$another = R::load($rel["table"], $data[$rel["key"]]);
 					#cria a tabela de associacao
 					$assoc = R::dispense($rel["assocTable"]);
+
 					#associa os itens
 					$tbl1 = $rel["table"];
 					$tbl2 = $this->table;
-					$assoc->$tbl1 = $another;
-					$assoc->$tbl2 = $obj;
 
-					R::Store($assoc);
+					$found = R::find($rel["assocTable"], "{$tbl1}_id = ? and {$tbl2}_id = ?", [$another->id, $obj->id]);
+					
+					#para evitar que cadastre duas vezes
+					#antes de salvar, verifica se ja foram relacionados
+					if ($found == null){
+						$assoc->$tbl1 = $another;
+						$assoc->$tbl2 = $obj;
+						R::Store($assoc);
+					}
 				}
 			}
 		}
