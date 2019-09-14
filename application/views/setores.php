@@ -118,22 +118,26 @@ foreach($list as $ln){
 	print "</tr>";
 }
 
-#paginacao, se houver mais de uma página a paginação aparecerá
+#paginacao
 $page_max = ceil($qtd/10);
-if ($page_max > 1):
-	$config['total_rows'] = $qtd;
-	$this->pagination->initialize($config);
+
+$config['total_rows'] = $qtd;
+$this->pagination->initialize($config);
 ?>
 	<tfoot>
 	<tr>
 		<th colspan="5">
-		<div class="ui right floated pagination menu">
-			<?=$this->pagination->create_links()?>
-		</div>
+		<span class="ui label">
+			Total: <?=$qtd?>
+		</span>
+		<?php if ($qtd > $config['total_rows']): ?>
+			<div class="ui right floated pagination menu">
+				<?=$this->pagination->create_links()?>
+			</div>
+		<?php endif; ?>
 		</th>
 	</tr>
 	</tfoot>
-<?php endif; ?>
 </tbody>
 </table>
 

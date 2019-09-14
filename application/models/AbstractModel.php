@@ -72,7 +72,7 @@ class AbstractModel extends CI_Model {
 						. " LIMIT $loc,$max_items_per_page ", $values );
 		
 		//Recupera a quantidade total de itens na tabela
-		$qtd = R::count($this->table);
+		$qtd = R::count($this->table, $where, $values );
 		
 		//Retorna um array com a list, registros na página,
 		//e a quantidade total de itens.

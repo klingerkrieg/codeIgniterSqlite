@@ -1,6 +1,6 @@
 <?php
 
-$config['base_url'] = site_url()."/usuarios/index/";
+$config['base_url'] = null;
 $config['per_page'] = 10;
 $config['use_page_numbers'] = true;
 $config['enable_query_strings'] = true;
@@ -20,3 +20,4 @@ $config['first_tag_open'] = '<li class="item">';
 $config['first_tagl_close'] = '</li>';
 $config['last_tag_open'] = '<li class="item">';
 $config['last_tagl_close'] = '</li>';
+$config['reuse_query_string'] = true;
