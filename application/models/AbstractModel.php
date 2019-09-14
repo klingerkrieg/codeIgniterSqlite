@@ -27,6 +27,22 @@ class AbstractModel extends CI_Model {
 	public function get($id = null){
 		if ($id == null){
 			//se a id for nula, retorna um array vazio
+
+			//se houver id no POST, provavelmente é porque houve erro de validacao
+			//retorna os dados que foram submetidos pelo formulário
+			if (isset($_POST['id']) && $_POST['id'] != ""){
+				$data = $_POST;
+				$state = $this->get($_POST['id']);
+		
+				foreach($_POST as $key=>$val){
+					if ( isset($state[$key]) ){
+						$state[$key] = $_POST[$key];
+					}
+				}
+				$data = $state;
+				return $data;
+			}
+
 			return [];
 		} else {
 			//caso contrário, busca no banco
@@ -151,13 +167,20 @@ public function pagination($per_page, $page, $busca = null){
 					$another = R::load($rel["table"], $data[$rel["key"]]);
 					#cria a tabela de associacao
 					$assoc = R::dispense($rel["assocTable"]);
+
 					#associa os itens
 					$tbl1 = $rel["table"];
 					$tbl2 = $this->table;
-					$assoc->$tbl1 = $another;
-					$assoc->$tbl2 = $obj;
 
-					R::Store($assoc);
+					$found = R::find($rel["assocTable"], "{$tbl1}_id = ? and {$tbl2}_id = ?", [$another->id, $obj->id]);
+					
+					#para evitar que cadastre duas vezes
+					#antes de salvar, verifica se ja foram relacionados
+					if ($found == null){
+						$assoc->$tbl1 = $another;
+						$assoc->$tbl2 = $obj;
+						R::Store($assoc);
+					}
 				}
 			}
 		}

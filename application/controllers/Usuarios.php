@@ -34,16 +34,16 @@ class Usuarios extends CI_Controller {
 		$listaPaginada = $this->Usuario_model->pagination($this->config->item("per_page"), $page, val($_GET,"busca"));
 		
 		//se for para abrir algum registro
+		//se tiver dado erro de validacao, o Model automaticamente pega os
+		//dados que foram enviados via POST
 		$dados = $this->Usuario_model->get($id);
-		//se tiver dado erro de validacao, pega os dados do POST
-		//para isso verifico se o campo id existe no POST
-		if (isset($_POST['id'])){
-			$dados = $_POST;
-		}
+
 
 		//recupera todos os setores para o select de setor
 		$this->load->model("Setor_model");
 		$setores = $this->Setor_model->all();
+		$this->load->model("Grupo_model");
+		$grupos = $this->Grupo_model->all();
 
 		//recupera os tipos possiveis de usuarios
 		$tiposUsuarios = $this->Usuario_model->tiposUsuarios;
@@ -51,6 +51,7 @@ class Usuarios extends CI_Controller {
 		$this->load->view('usuarios', ["listaPaginada"=>$listaPaginada,
 										"dados"=>$dados,
 										"setores"=>$setores,
+										"grupos"=>$grupos,
 										"tiposUsuarios"=>$tiposUsuarios]);
 		
 	}
@@ -159,6 +160,12 @@ class Usuarios extends CI_Controller {
 		$this->Usuario_model->delete($id);
 		$this->session->set_flashdata("warning","<div class='ui yellow message'>Registro deletado.</div>");
 		redirect("usuarios/index");
-		
+	}
+
+
+	public function remover_grupo($this_id, $assoc_id){
+		$this->load->model("Grupo_model");
+		$this->Grupo_model->remove_usuario($assoc_id);
+		redirect("usuarios/index/" . $this_id );
 	}
 }

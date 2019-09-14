@@ -57,7 +57,7 @@ foreach($dados->ownUsuariosList as $ln){
 	
 	print "<tr>";
 	
-	print "<td>{$ln->nome}</td>";
+	print "<td><a href='".site_url()."/usuarios/index/{$ln->id}'> {$ln->nome} </a></td>";
 	print "<td>{$ln->email}</td>";
 	
 	#para remover o usuario eu preciso passar a id_setor e depois id_usuario

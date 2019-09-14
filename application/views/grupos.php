@@ -52,18 +52,18 @@
 <?php
 
 
-foreach($dados->ownGruposusuariosList as $groupList){
+foreach($dados->ownGruposusuariosList as $gruposusuarios){
 	
-	$user = $groupList->usuarios;
+	$user = $gruposusuarios->usuarios;
 
 	print "<tr>";
 	
-	print "<td>{$user->nome}</td>";
+	print "<td><a href='".site_url()."/usuarios/index/{$user->id}'> {$user->nome} </a></td>";
 	print "<td>{$user->email}</td>";
 	
 	#para remover o usuario eu preciso passar a id_setor
 	#depois a id do registro da tabela gruposusuarios
-	print "<td><a href='".site_url()."/grupos/remover_usuario/{$dados['id']}/{$groupList->id}'> Remover </a></td>";
+	print "<td><a href='".site_url()."/grupos/remover_usuario/{$dados['id']}/{$gruposusuarios->id}'> Remover </a></td>";
 	
 	print "</tr>";
 }

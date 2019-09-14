@@ -30,11 +30,6 @@ class Grupos extends CI_Controller {
 
 		//se for para abrir algum registro
 		$dados = $this->Grupo_model->get($id);
-		//se tiver dado erro de validacao, pega os dados do POST
-		//para isso verifico se o campo id existe no POST
-		if (isset($_POST['id'])){
-			$dados = $_POST;
-		}
 
 
 		//Seleciona todas as pessoas que ainda nao estao naquele Grupo
@@ -84,7 +79,6 @@ class Grupos extends CI_Controller {
 	}
 
 	public function remover_usuario($grupo_id, $assoc_id){
-
 		$this->Grupo_model->remove_usuario($assoc_id);
 		redirect("grupos/index/" . $grupo_id );
 	}

@@ -32,11 +32,6 @@ class Setores extends CI_Controller {
 
 		//se for para abrir algum registro
 		$dados = $this->Setor_model->get($id);
-		//se tiver dado erro de validacao, pega os dados do POST
-		//para isso verifico se o campo id existe no POST
-		if (isset($_POST['id'])){
-			$dados = $_POST;
-		}
 
 		//Seleciona todas as pessoas que ainda nao estao naquele setor
 		$this->load->model("Usuario_model");
