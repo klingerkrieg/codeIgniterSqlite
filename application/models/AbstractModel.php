@@ -1,8 +1,5 @@
 <?php
 
-
-
-
 class AbstractModel extends CI_Model {
 
 	#nomes de tabelas e campos nao podem ter _ - ou letras maiusculas
@@ -30,16 +27,19 @@ class AbstractModel extends CI_Model {
 
 			//se houver id no POST, provavelmente é porque houve erro de validacao
 			//retorna os dados que foram submetidos pelo formulário
-			if (isset($_POST['id']) && $_POST['id'] != ""){
+			if (isset($_POST['id'])){
 				$data = $_POST;
-				$state = $this->get($_POST['id']);
+				if ($_POST['id'] != ""){
+					$state = $this->get($_POST['id']);
 		
-				foreach($_POST as $key=>$val){
-					if ( isset($state[$key]) ){
-						$state[$key] = $_POST[$key];
+					foreach($_POST as $key=>$val){
+						if ( isset($state[$key]) ){
+							$state[$key] = $_POST[$key];
+						}
 					}
+					
+					$data = $state;
 				}
-				$data = $state;
 				return $data;
 			}
 
@@ -143,7 +143,7 @@ public function pagination($per_page, $page, $busca = null){
 					#own+NomeDaTabela+List
 					#essa propriedade sera um array com varios daquele model que voce adicionar
 					$tblName = "own" . ucfirst($rel["table"]) . "List";
-					$obj->$tblName[] = $another;
+					array_push($obj->$tblName, $another);
 				}
 			}
 		}
