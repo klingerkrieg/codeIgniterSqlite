@@ -41,6 +41,31 @@
 	</label>
 </div>
 
+<?php
+#verifica se tem permissao para escolher o nível do usuário
+if (Seguranca::temPermissao("permissoes")): ?>
+<div class="field">
+	<label>Nível de acesso
+		<select name="permissoes_id">
+			<option></option>
+			<?php
+			foreach($permissoes as $item){
+				
+				if ($dados['permissoes_id'] == $item['id']){
+					$selected = "selected";
+				} else {
+					$selected = "";
+				}
+
+				print "<option $selected value='{$item['id']}'>{$item['nome']}</option>";
+			}
+			?>
+		</select>
+		<?=form_error('permissoes_id')?>
+	</label>
+</div>
+<?php endif; ?>
+
 <div class="field">
 	<label>Setor
 		<select name="setores_id">
@@ -111,6 +136,7 @@ foreach($dados->ownGruposusuariosList as $gruposusuarios){
 </tbody>
 </table>
 </div>
+
 
 <?php endif; ?>
 

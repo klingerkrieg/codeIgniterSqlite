@@ -1,13 +1,12 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Setores extends CI_Controller {
-	
+class Permissoes extends CI_Controller {
+
 	public function __construct(){
 		parent::__construct();
 		
-		//Carrega o Model de setor
-		$this->load->model("Setor_model");
+		$this->load->model("Permissao_model");
 
 		#verifica se o usuário fez o login corretamente
 		if (!isset($_SESSION["email"])){
@@ -15,47 +14,51 @@ class Setores extends CI_Controller {
 		}
 
 		$this->seguranca->check();
-
 	}
 	
 	
 	//página principal
 	public function index($id=null) {
 
+		$arvore = $this->seguranca->arvore(["usuarios","permissoes","setores","grupos"]);
+		
 		if (isset($_GET['page'])){
 			$page = $_GET['page'];
 		} else {
 			$page = 1;
 		}
-
-
 		
 		//busca todos os registros para a listagem
-		$listaPaginada = $this->Setor_model->pagination($this->config->item("per_page"), $page, val($_GET,"busca"));
-
-		//se for para abrir algum registro
-		$dados = $this->Setor_model->get($id);
-
-		//Seleciona todas as pessoas que ainda nao estao naquele setor
-		$this->load->model("Usuario_model");
-		#$pessoas = $this->Usuario_model->findNotInSetor($id);
-		$pessoas = $this->Usuario_model->all();
+		$listaPaginada = $this->Permissao_model->pagination($this->config->item("per_page"), $page, val($_GET,"busca"));
 		
-		$this->load->view('setores', ["listaPaginada"=>$listaPaginada,
+		//se for para abrir algum registro
+		//se tiver dado erro de validacao, o Model automaticamente pega os
+		//dados que foram enviados via POST
+		$dados = $this->Permissao_model->get($id);
+
+
+		//recupera todos os setores para o select de setor
+		$this->load->model("Usuario_model");
+		$usuarios = $this->Usuario_model->all();
+		
+		$this->load->view('permissoes', ["listaPaginada"=>$listaPaginada,
 										"dados"=>$dados,
-										"pessoas"=>$pessoas]);
+										"usuarios"=>$usuarios,
+										"arvore"=>$arvore]);
 		
 	}
-	
+
 	
 	
 	public function salvar(){
-		$this->form_validation->set_rules('nome', 'Nome', 'required');
 
+		$this->form_validation->set_rules('nome', 'Nome', 'required');
+		
 		if ($this->form_validation->run() == FALSE) {
 			$this->index();
 		} else {
-			$obj = $this->Setor_model->save();
+			
+			$obj = $this->Permissao_model->save();
 
 			#mensagem de confirmação
 			if ($obj == ""){
@@ -64,26 +67,20 @@ class Setores extends CI_Controller {
 				$this->session->set_flashdata("success","<div class='ui green message'>Salvo com sucesso.</div>");
 			}
 
-			
-			redirect("setores/index/" . $obj );
+			redirect("permissoes/index/" . $obj );
 		}
 	}
 	
 	
-	
-	
 	public function deletar($id){
-		$this->Setor_model->delete($id);
-
+		$this->Permissao_model->delete($id);
 		$this->session->set_flashdata("warning","<div class='ui yellow message'>Registro deletado.</div>");
-		
-		redirect("setores/index");
-		
+		redirect("permissoes/index");
 	}
 
-	public function remover_usuario($id_setor, $id_usuario){
 
-		$this->Setor_model->remove_usuario($id_setor,$id_usuario);
-		redirect("setores/index/" . $id_setor );
+	public function remover_usuario($id_permissao, $id_usuario){
+		$this->Permissao_model->remove_usuario($id_permissao,$id_usuario);
+		redirect("permissoes/index/" . $id_permissao );
 	}
 }

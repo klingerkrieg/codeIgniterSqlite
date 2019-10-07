@@ -39,6 +39,7 @@ class Login extends CI_Controller {
 			if ($user != null){
 				$_SESSION["nome"] = $user->nome;
 				$_SESSION["email"] = $user->email;
+				$_SESSION["user_id"] = $user->id;
 
 				redirect("usuarios/index/");
 			} else {
@@ -59,9 +60,8 @@ class Login extends CI_Controller {
 
 
 	public function cria_usuario(){
-		
-		$data = ["nome"=>"admin","email"=>"admin@admin.com","senha"=>"123456"];
-		if ($this->Usuario_model->save($data)) {
+
+		if ($this->Usuario_model->resetAdmin()) {
 			$this->session->set_flashdata("message","O usuário admin@admin.com, senha 123456 foi criado. Tente fazer o login.");
 		} else {
 			$this->session->set_flashdata("message","Houve uma falha ao criar o usuário padrão.");

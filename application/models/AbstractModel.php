@@ -15,9 +15,21 @@ class AbstractModel extends CI_Model {
 	#[['table'=>'usuarios', 'key'=>'usuario_id', 'assocTable'=>'gruposusuarios'], ...]
 	public $manyToMany = false;
 
+	public $arrayFields = false;
+
 
 	function decamelize($string) {
 		return strtolower(preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1_$2', $string));
+	}
+
+	public function parseArrayFields($obj){
+		if ($this->arrayFields != false){
+			foreach($this->arrayFields as $field){
+				if (isset($obj->$field) && !is_array($obj->$field))
+					$obj->$field = explode(";",$obj->$field);
+			}
+		}
+		return $obj;
 	}
 	
 	//recebo a id do elemento que quero abrir
@@ -40,14 +52,14 @@ class AbstractModel extends CI_Model {
 					
 					$data = $state;
 				}
-				return $data;
+				return $this->parseArrayFields($data);
 			}
 
 			return [];
 		} else {
 			//caso contrário, busca no banco
 			//aquele elemento da tabela que tem aquela id
-			return R::load($this->table,$id);
+			return $this->parseArrayFields(R::load($this->table,$id));
 		}
 	}
 
@@ -118,6 +130,16 @@ public function pagination($per_page, $page, $busca = null){
 	}
 
 
+	public function getOrSave($data){
+		$obj = $this->findOne($data);
+		if ($obj == null){
+			return $this->save($data);
+		} else {
+			return $obj;
+		}
+	}
+
+
 	public function save($data=null) {
 		
 		if ($data == null){
@@ -130,7 +152,11 @@ public function pagination($per_page, $page, $busca = null){
 
 		
 		foreach($fields as $key=>$val){
-			$obj[$key] = $val;
+			if (is_array($val)){
+				$obj[$key] = implode(";",$val);
+			} else {
+				$obj[$key] = $val;
+			}
 		}
 
 		#verifica se existe relacionamentos

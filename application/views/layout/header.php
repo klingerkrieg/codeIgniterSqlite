@@ -8,6 +8,7 @@
   <script src="<?=base_url()?>static/semantic/semantic.js"></script>
   <script src="<?=base_url()?>static/delete.js"></script>
   <script src="<?=base_url()?>static/mask.js"></script>
+  <script src="<?=base_url()?>static/checkboxes.js"></script>
 </head>
 <body>
 
@@ -20,6 +21,13 @@
   <a href="<?=site_url()?>/usuarios/" class="item">Usuários</a>
   <a href="<?=site_url()?>/setores/" class="item">Setores</a>
   <a href="<?=site_url()?>/grupos/" class="item">Grupos</a>
+
+  <?php
+  #verifica se tem o nível necessário para cadastrar permissões
+  if (Seguranca::temPermissao("permissoes")): ?>
+    <a href="<?=site_url()?>/permissoes/" class="item"><i class="lock icon"></i>Permissões</a>
+  <?php endif; ?>
+  
   <a href="<?=site_url()?>/login/logout/" class="item"><?=$_SESSION['email']?> | Logout</a>
 
 </div>

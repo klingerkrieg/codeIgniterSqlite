@@ -4,15 +4,17 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Grupos extends CI_Controller {
 	
 	public function __construct(){
-			parent::__construct();
-			
-			//Carrega o Model de Grupo
-			$this->load->model("Grupo_model");
+		parent::__construct();
+		
+		//Carrega o Model de Grupo
+		$this->load->model("Grupo_model");
 
-			#verifica se o usuário fez o login corretamente
-			if (!isset($_SESSION["email"])){
-				redirect("login/index/");
-			}
+		#verifica se o usuário fez o login corretamente
+		if (!isset($_SESSION["email"])){
+			redirect("login/index/");
+		}
+
+		$this->seguranca->check();
 	}
 	
 	

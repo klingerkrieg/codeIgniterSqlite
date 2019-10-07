@@ -18,6 +18,8 @@ class Usuarios extends CI_Controller {
 		if (!isset($_SESSION["email"])){
 			redirect("login/index/");
 		}
+
+		$this->seguranca->check();
 	}
 	
 	
@@ -44,6 +46,8 @@ class Usuarios extends CI_Controller {
 		$setores = $this->Setor_model->all();
 		$this->load->model("Grupo_model");
 		$grupos = $this->Grupo_model->all();
+		$this->load->model("Permissao_model");
+		$permissoes = $this->Permissao_model->all();
 
 		//recupera os tipos possiveis de usuarios
 		$tiposUsuarios = $this->Usuario_model->tiposUsuarios;
@@ -52,6 +56,7 @@ class Usuarios extends CI_Controller {
 										"dados"=>$dados,
 										"setores"=>$setores,
 										"grupos"=>$grupos,
+										"permissoes"=>$permissoes,
 										"tiposUsuarios"=>$tiposUsuarios]);
 		
 	}
@@ -129,6 +134,11 @@ class Usuarios extends CI_Controller {
 		$this->form_validation->set_rules('email', 'E-mail', 'required|valid_email');
 		$this->form_validation->set_rules('setores_id', 'Setor', 'required');
 
+		#A permissao só será obrigatória quando a pessoa que estiver cadastrando
+		#tiver o nivel de acesso necessário
+		if (Seguranca::temPermissao("permissoes"))
+			$this->form_validation->set_rules('permissoes_id', 'Nível de acesso', 'required');
+
 		
 		if ($this->form_validation->run() == FALSE) {
 			$this->index();
@@ -166,6 +176,12 @@ class Usuarios extends CI_Controller {
 	public function remover_grupo($this_id, $assoc_id){
 		$this->load->model("Grupo_model");
 		$this->Grupo_model->remove_usuario($assoc_id);
+		redirect("usuarios/index/" . $this_id );
+	}
+
+	public function remover_permissao($this_id, $assoc_id){
+		$this->load->model("Permissao_model");
+		$this->Permissao_model->remove_usuario($assoc_id);
 		redirect("usuarios/index/" . $this_id );
 	}
 }
