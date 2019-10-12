@@ -287,11 +287,12 @@ class CI_Router {
 	 *
 	 * @return	void
 	 */
+	public $defaultController = false;
 	protected function _set_default_controller()
 	{
 		if (empty($this->default_controller))
 		{
-			show_error('Unable to determine what should be displayed. A default route has not been specified in the routing file.');
+			show_error("<p>Você não definiu um controle principal em config/<b>routes.php</b>.</p><br/><pre>	\$route['default_controller'] = '<b>um_controle_aqui</b>';</pre>");
 		}
 
 		// Is the method being specified?
@@ -302,6 +303,10 @@ class CI_Router {
 
 		if ( ! file_exists(APPPATH.'controllers/'.$this->directory.ucfirst($class).'.php'))
 		{
+			global $cg_error;
+			$cg_error = "<p>Você definiu <b>{$class}</b> como o controle principal em config/routes.php, porém esse controle não existe.</p>";
+			$cg_error .= "<br/><pre>	\$route['default_controller'] = '{$class}';</pre>";
+			$this->set_class($class);
 			// This will trigger 404 later
 			return;
 		}
@@ -314,6 +319,8 @@ class CI_Router {
 			1 => $class,
 			2 => $method
 		);
+
+		$this->defaultController = true;
 
 		log_message('debug', 'No URI present. Default controller set.');
 	}

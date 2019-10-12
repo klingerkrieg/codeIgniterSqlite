@@ -1,4 +1,6 @@
 <?php
+global $cg_error;
+
 /**
  * CodeIgniter
  *
