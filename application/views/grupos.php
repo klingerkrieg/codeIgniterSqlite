@@ -14,7 +14,7 @@
 <div class="field">
 	<label>Nome
 		<input type="text" name="nome" value="<?=val($dados,'nome')?>">
-		<?=form_error('nome')?>
+		<?=error('nome')?>
 	</label>
 </div>
 

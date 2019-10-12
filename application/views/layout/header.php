@@ -19,15 +19,10 @@
     <img src="<?=base_url()?>/static/logo.png">
   </div>
   <a href="<?=site_url()?>/usuarios/" class="item">Usuários</a>
-  <a href="<?=site_url()?>/setores/" class="item">Setores</a>
-  <a href="<?=site_url()?>/grupos/" class="item">Grupos</a>
-
-  <?php
-  #verifica se tem o nível necessário para cadastrar permissões
-  if (Seguranca::temPermissao("permissoes")): ?>
-    <a href="<?=site_url()?>/permissoes/" class="item"><i class="lock icon"></i>Permissões</a>
+  <?php if (Seguranca::temPermissao("Comum")) : ?>
+    <a href="<?=site_url()?>/setores/" class="item">Setores</a>
+    <a href="<?=site_url()?>/grupos/" class="item">Grupos</a>
   <?php endif; ?>
-  
   <a href="<?=site_url()?>/login/logout/" class="item"><?=$_SESSION['email']?> | Logout</a>
 
 </div>

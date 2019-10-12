@@ -15,7 +15,7 @@
 <div class="field">
 	<label>Nome
 		<input type="text" name="nome" value="<?=val($dados,'nome')?>">
-		<?=form_error('nome')?>
+		<?=error('nome')?>
 	</label>
 </div>
 
@@ -23,45 +23,45 @@
 <div class="field">
 	<label>E-mail
 		<input type="text" name="email" value="<?=val($dados,'email')?>">
-		<?=form_error('email')?>
+		<?=error('email')?>
 	</label>
 </div>
 
 <div class="field">
 	<label>Senha
 		<input type="password" name="senha" value="">
-		<?=form_error('senha')?>
+		<?=error('senha')?>
 	</label>
 </div>
 
 <div class="field">
 	<label>Confirmação da senha
 		<input type="password" name="senhaConfirm" value="">
-		<?=form_error('senhaConfirm')?>
+		<?=error('senhaConfirm')?>
 	</label>
 </div>
 
 <?php
 #verifica se tem permissao para escolher o nível do usuário
-if (Seguranca::temPermissao("permissoes")): ?>
+if (Seguranca::temPermissao("Admin")): ?>
 <div class="field">
 	<label>Nível de acesso
-		<select name="permissoes_id">
+		<select name="nivel">
 			<option></option>
 			<?php
-			foreach($permissoes as $item){
+			foreach($niveis as $key=>$item){
 				
-				if ($dados['permissoes_id'] == $item['id']){
+				if (val($dados,'nivel') == $key){
 					$selected = "selected";
 				} else {
 					$selected = "";
 				}
 
-				print "<option $selected value='{$item['id']}'>{$item['nome']}</option>";
+				print "<option $selected value='{$key}'>{$item}</option>";
 			}
 			?>
 		</select>
-		<?=form_error('permissoes_id')?>
+		<?=error('nivel')?>
 	</label>
 </div>
 <?php endif; ?>
@@ -72,8 +72,8 @@ if (Seguranca::temPermissao("permissoes")): ?>
 			<option></option>
 			<?php
 			foreach($setores as $item){
-				#para ja vir selecionado o setor do usuario, caso tenha sido escolhido
-				if ($dados['setores_id'] == $item['id']){
+				
+				if (val($dados,'setores_id') == $item['id']){
 					$selected = "selected";
 				} else {
 					$selected = "";
@@ -83,7 +83,7 @@ if (Seguranca::temPermissao("permissoes")): ?>
 			}
 			?>
 		</select>
-		<?=form_error('setores_id')?>
+		<?=error('setores_id')?>
 	</label>
 </div>
 
@@ -153,7 +153,7 @@ foreach($dados->ownGruposusuariosList as $gruposusuarios){
 			print "<label class='field'><input type='radio' name='tipo' $checked value='$key'>$tipo</label>";
 		}
 		?>
-		<?=form_error('tipo')?>
+		<?=error('tipo')?>
 	</div>
 </div>
 
@@ -161,7 +161,7 @@ foreach($dados->ownGruposusuariosList as $gruposusuarios){
 <div class="field">
 	<label>Foto
 		<input type="file" name="foto">
-		<?=form_error('foto')?>
+		<?=error('foto')?>
 	</label>
 	<?php
 	if (val($dados,"foto") != ""){

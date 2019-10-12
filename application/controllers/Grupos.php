@@ -14,7 +14,7 @@ class Grupos extends CI_Controller {
 			redirect("login/index/");
 		}
 
-		$this->seguranca->check();
+		$this->seguranca->permitir("Comum");
 	}
 	
 	
@@ -52,6 +52,7 @@ class Grupos extends CI_Controller {
 		$this->form_validation->set_rules('nome', 'Nome', 'required');
 
 		if ($this->form_validation->run() == FALSE) {
+			$this->session->set_flashdata("error","<div class='ui red message'>Corrija os erros no formulário.</div>");
 			$this->index();
 		} else {
 			$obj = $this->Grupo_model->save();

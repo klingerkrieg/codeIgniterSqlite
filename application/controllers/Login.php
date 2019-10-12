@@ -60,9 +60,9 @@ class Login extends CI_Controller {
 
 
 	public function cria_usuario(){
-
-		if ($this->Usuario_model->resetAdmin()) {
-			$this->session->set_flashdata("message","O usuário admin@admin.com, senha 123456 foi criado. Tente fazer o login.");
+		$admin = $this->Usuario_model->resetAdmin();
+		if ($admin['id'] != null) {
+			$this->session->set_flashdata("message","O usuário {$admin['email']}, senha {$admin['senha']} foi criado. Tente fazer o login.");
 		} else {
 			$this->session->set_flashdata("message","Houve uma falha ao criar o usuário padrão.");
 		}

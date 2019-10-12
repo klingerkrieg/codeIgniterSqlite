@@ -4,18 +4,21 @@ class Usuario_model extends AbstractModel {
 
 	#nomes de tabelas e campos nao podem ter _ - ou letras maiusculas
 	public $table = "usuarios";
-	public $fields = ["nome","email","senha", "tipo", "foto"];
-	public $tiposUsuarios = [1=>"Professor", 2=>"Técnico", 3=>"Bolsista"];
+	public $fields = ["nome","email","senha", "tipo", "foto", "nivel"];
 	public $searchFields = ["nome","email"];
+	public $tiposUsuarios = [1=>"Professor", 2=>"Técnico", 3=>"Bolsista"];
+	
+	#Seguranca
+	#variável que contem os níveis
+	public $secureLevels = [1=>"Admin", 2=>"Comum", 3=>"Convidado"];
+	public $secureField = "nivel";#campo responsável por definir o nível de seguranca
+	
 
 	#varios usuarios podem ter o mesmo setor
 	#a key é o campo no formulario que contem a id do setor
-	public $manyToOne = [["table"=>"setores", "key"=>"setores_id"],
-							["table"=>"permissoes","key"=>"permissoes_id"]];
-	public $manyToMany = [["table"=>"grupos","key"=>"grupo_id", "assocTable"=>"gruposusuarios"]];
-
-	public $defaultPermission_id = 2;#Comum
+	public $manyToOne = [["table"=>"setores", "key"=>"setores_id"]];
 	
+
 	public function login($data){
 		$data["senha"] = sha1($data["senha"]);
 		return $this->findOne($data);
@@ -23,12 +26,11 @@ class Usuario_model extends AbstractModel {
 
 	public function preSave($obj, $data) {
 
-		#Seta a permissão padrao para quem não tiver o nivel
-		#de acesso necessário
-		if (Seguranca::temPermissao("permissoes")){
-			$this->load->model("Permissao_model");
-			$obj["permissoes_id"] = $this->$defaultPermission_id;
+		#Caso alguem tente salvar como Admin, seta para a permissao padrao
+		if (($obj["nivel"] == "Admin" || $obj["nivel"] == "") && !Seguranca::temPermissao("Admin")){
+			$obj["nivel"] = 3;
 		}
+
 		
 		if ($obj["senha"] != ""){
 			//criptografa a senha
@@ -57,17 +59,25 @@ class Usuario_model extends AbstractModel {
 
 	public function resetAdmin(){
 
+		$email = "admin@admin.com";
+		$senha = "123456";
+
 		#deleta todos os admins
-		$sql = "delete from {$this->table} where email = 'admin@admin.com'";
+		$sql = "delete from gruposusuarios
+			where usuarios_id in (select id from usuarios where email = '$email')";
 		R::exec($sql);
-		
-		#cria a permissao de admin
-		$this->load->model("Permissao_model");
-		$permissao_id = $this->Permissao_model->getOrSave(["nome"=>"Admin", "admin"=>1, "controles"=>""]);
+		$sql = "delete from {$this->table} where email = '$email'";
+		R::exec($sql);
+			
 
 		#recria o admin
-		$data = ["nome"=>"admin","email"=>"admin@admin.com","senha"=>"123456","permissoes_id"=>$permissao_id];
-		return $this->save($data);
+		$admin = R::dispense($this->table);
+		$admin->nome = "admin";
+		$admin->email = $email;
+		$admin->senha = sha1($senha);
+		$admin->nivel = 1;
+		R::Store($admin);
+		return ["id"=>$admin->id, "email"=>$email, "senha"=>$senha];
 	}
 
 

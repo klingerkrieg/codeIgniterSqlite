@@ -15,14 +15,14 @@
             <i class="user icon"></i>
             <input type="text" name="email" placeholder="Digite seu e-mail">
           </div>
-          <?=form_error('email')?>
+          <?=error('email')?>
         </div>
         <div class="field">
           <div class="ui left icon input">
             <i class="lock icon"></i>
             <input type="password" name="senha" placeholder="Digite sua senha">
           </div>
-          <?=form_error('senha')?>
+          <?=error('senha')?>
         </div>
         <button class="ui fluid large teal submit button">Entrar</button>
       </div>

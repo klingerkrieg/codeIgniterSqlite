@@ -15,7 +15,19 @@ class AbstractModel extends CI_Model {
 	#[['table'=>'usuarios', 'key'=>'usuario_id', 'assocTable'=>'gruposusuarios'], ...]
 	public $manyToMany = false;
 
+	public $secureField = false;
+	public $secureLevels = false;
+
 	public $arrayFields = false;
+
+	public function __construct(){
+		parent::__construct();
+
+		#se tiver campo de seguranca
+		if ($this->secureField != false){
+			$_SESSION["model_seguranca"] = get_class($this);
+		}
+	}
 
 
 	function decamelize($string) {

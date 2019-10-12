@@ -19,7 +19,7 @@ class Usuarios extends CI_Controller {
 			redirect("login/index/");
 		}
 
-		$this->seguranca->check();
+		$this->seguranca->permitir("Convidado");
 	}
 	
 	
@@ -46,17 +46,16 @@ class Usuarios extends CI_Controller {
 		$setores = $this->Setor_model->all();
 		$this->load->model("Grupo_model");
 		$grupos = $this->Grupo_model->all();
-		$this->load->model("Permissao_model");
-		$permissoes = $this->Permissao_model->all();
 
 		//recupera os tipos possiveis de usuarios
 		$tiposUsuarios = $this->Usuario_model->tiposUsuarios;
+		$niveis = $this->Usuario_model->secureLevels;
 		
 		$this->load->view('usuarios', ["listaPaginada"=>$listaPaginada,
 										"dados"=>$dados,
 										"setores"=>$setores,
 										"grupos"=>$grupos,
-										"permissoes"=>$permissoes,
+										"niveis"=>$niveis,
 										"tiposUsuarios"=>$tiposUsuarios]);
 		
 	}
@@ -114,6 +113,9 @@ class Usuarios extends CI_Controller {
 	
 	public function salvar(){
 
+		#So permite usuarios com nivel Comum ou Superior
+		$this->seguranca->permitir("Comum");
+
 		#upload de foto com validacao
 		if (isset($_FILES[$this->upload_name]) && $_FILES[$this->upload_name]["name"] != ""){
 			#o arquivo será salvo e feita a validacao
@@ -136,11 +138,12 @@ class Usuarios extends CI_Controller {
 
 		#A permissao só será obrigatória quando a pessoa que estiver cadastrando
 		#tiver o nivel de acesso necessário
-		if (Seguranca::temPermissao("permissoes"))
-			$this->form_validation->set_rules('permissoes_id', 'Nível de acesso', 'required');
+		if (Seguranca::temPermissao("Admin"))
+			$this->form_validation->set_rules('nivel', 'Nível de acesso', 'required');
 
 		
 		if ($this->form_validation->run() == FALSE) {
+			$this->session->set_flashdata("error","<div class='ui red message'>Corrija os erros no formulário.</div>");
 			$this->index();
 		} else {
 
@@ -167,6 +170,9 @@ class Usuarios extends CI_Controller {
 	
 	
 	public function deletar($id){
+		#So permite usuarios com nivel Comum ou Superior
+		$this->seguranca->permitir("Comum");
+
 		$this->Usuario_model->delete($id);
 		$this->session->set_flashdata("warning","<div class='ui yellow message'>Registro deletado.</div>");
 		redirect("usuarios/index");
@@ -174,12 +180,18 @@ class Usuarios extends CI_Controller {
 
 
 	public function remover_grupo($this_id, $assoc_id){
+		#So permite usuarios com nivel Comum ou Superior
+		$this->seguranca->permitir("Comum");
+
 		$this->load->model("Grupo_model");
 		$this->Grupo_model->remove_usuario($assoc_id);
 		redirect("usuarios/index/" . $this_id );
 	}
 
 	public function remover_permissao($this_id, $assoc_id){
+		#So permite usuarios com nivel Comum ou Superior
+		$this->seguranca->permitir("Comum");
+		
 		$this->load->model("Permissao_model");
 		$this->Permissao_model->remove_usuario($assoc_id);
 		redirect("usuarios/index/" . $this_id );
