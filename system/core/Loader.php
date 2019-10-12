@@ -324,6 +324,15 @@ class CI_Loader {
 			}
 		}
 
+		$model_help = "<br/>Verifique se o nome do model está correto:<br>";
+		$model_help .= "a) O nome do arquivo deve terminar com <b>_model.php</b><br>";
+		$model_help .= "b) O nome do arquivo deve ser igual ao nome da classe:<br>";
+		$model_help .= "<pre>			models/<b>{$model}</b>.php
+			class <b>{$model}</b> extends AbstractModel {
+				...
+			}
+		</pre>";
+
 		$model = ucfirst($model);
 		if ( ! class_exists($model, FALSE))
 		{
@@ -337,7 +346,9 @@ class CI_Loader {
 				require_once($mod_path.'models/'.$path.$model.'.php');
 				if ( ! class_exists($model, FALSE))
 				{
-					throw new RuntimeException($mod_path."models/".$path.$model.".php exists, but doesn't declare class ".$model);
+					$msg = "models/<b>{$model}</b>.php existe, mas você não declarou a classe ".$model;
+					$msg .= $model_help;
+					throw new RuntimeException($msg);
 				}
 
 				break;
@@ -345,7 +356,10 @@ class CI_Loader {
 
 			if ( ! class_exists($model, FALSE))
 			{
-				throw new RuntimeException('Unable to locate the model you have specified: '.$model);
+				$msg = "Não foi possível encontrar o model: <b>{$model}</b>";
+				$msg .= $model_help;
+				
+				throw new RuntimeException($msg);
 			}
 		}
 		elseif ( ! is_subclass_of($model, 'CI_Model'))

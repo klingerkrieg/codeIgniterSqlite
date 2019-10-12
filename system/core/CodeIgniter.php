@@ -422,6 +422,12 @@ if ( ! is_php('5.4'))
 		elseif ( ! method_exists($class, $method))
 		{
 			$e404 = TRUE;
+			if ($RTR->defaultController){
+				$cg_error = "<p>O método <b>{$method}</b> definido no <b>config/routes.php</b> não existe.</p>";
+				$cg_error .= "<br/><pre>	\$route['default_controller'] = '{$class}/<b>{$method}</b>';</pre>";
+			} else {
+				$cg_error = "<p>O método <b>{$method}</b> na sua URL não existe.</p>";
+			}
 		}
 		/**
 		 * DO NOT CHANGE THIS, NOTHING ELSE WORKS!
