@@ -3,6 +3,7 @@
 class Usuario_model extends AbstractModel {
 
 		public $table = "usuarios";
+		#nao use espaço no nome dos campos
         public $fields = ["nome","email","senha"];
 		
 		
