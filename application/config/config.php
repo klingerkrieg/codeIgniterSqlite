@@ -524,6 +524,8 @@ $config['rewrite_short_tags'] = FALSE;
 */
 $config['proxy_ips'] = '';
 
+
+
 #pagination
 $config['per_page'] = 10;
 

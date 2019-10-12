@@ -8,6 +8,7 @@
   <script src="<?=base_url()?>static/semantic/semantic.js"></script>
   <script src="<?=base_url()?>static/delete.js"></script>
   <script src="<?=base_url()?>static/mask.js"></script>
+  <script src="<?=base_url()?>static/checkboxes.js"></script>
 </head>
 <body>
 

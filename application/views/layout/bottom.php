@@ -1,5 +1,5 @@
-</div><!-- ui text container -->
-
+</div> <!-- ui text container -->
+<div id="rodape"></div>
 
 <?php if (ENVIRONMENT == "development"): ?>
   <div class="ui yellow message debugger">
@@ -8,6 +8,22 @@
       Debugger
     </div>
   <?php
+
+  #mostra os erros do PHP
+  foreach($_SESSION["php_errors"] as $err){
+    print "<p class='ui red message'>$err</p>";
+  }
+
+
+  #mostra as validações que não foram mostradas no formulário
+  $errors = errors();
+  foreach($errors as $val=>$err){
+    print "<p class='ui red message'>
+    O campo \"<b>$val</b>\" não existe no formulário, a validação do <b>controller</b> não está permitindo que o formulário seja salvo sem esse campo.</p>";
+  }
+  clear_errors();
+
+
 
   $logs = val($_SESSION,'logs');
   if ($logs != ""){
@@ -22,7 +38,7 @@
   }
   ?>
   <script>
-  $('p:contains("SELECT"),p:contains("select")').addClass("ui blue message").next().addClass("ui blue message");
+  $('p:contains("SELECT"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
   $('p:contains("UPDATE"),p:contains("update")').addClass("ui green message").next().addClass("ui green message");
   $('p:contains("INSERT"),p:contains("insert")').addClass("ui green message").next().addClass("ui green message");
   $('p:contains("DELETE"),p:contains("delete")').addClass("ui green message").next().addClass("ui green message");
