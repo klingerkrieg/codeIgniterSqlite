@@ -23,6 +23,32 @@ class AbstractModel extends CI_Model {
 	public function __construct(){
 		parent::__construct();
 
+		if ($this->arrayFields == false)
+			$this->arrayFields = [];
+			
+		foreach($this->fields as $key=>$field){
+			if (!is_numeric($key)){
+				if ($field == "array"){
+					array_push($this->arrayFields,$key);
+				} else
+				if ($field == "secure"){
+					$this->secureField = $key;
+				}
+			}
+		}
+		$arr = array_merge($this->arrayFields);
+		if ($this->secureField != false){
+			array_push($arr, $this->secureField);
+		}
+		foreach($arr as $field){
+			unset($this->fields[$field]);
+			array_push($this->fields, $field);
+		}
+		if (count($this->arrayFields) == 0)
+			$this->arrayFields = false;
+		
+		
+
 		#se tiver campo de seguranca
 		if ($this->secureField != false){
 			$_SESSION["model_seguranca"] = get_class($this);
@@ -39,6 +65,9 @@ class AbstractModel extends CI_Model {
 			foreach($this->arrayFields as $field){
 				if (isset($obj->$field) && !is_array($obj->$field))
 					$obj->$field = explode(";",$obj->$field);
+					/*if (is_array($obj->$field) && count($obj->$field) == 1 && $obj->$field[0] == ""){
+						$obj->$field = [];
+					}*/
 			}
 		}
 		return $obj;
@@ -87,37 +116,41 @@ class AbstractModel extends CI_Model {
 		return R::findOne($this->table,$where,$whereData);
 	}
 
-//recebe o número da página que será exibida, inicia na 1
-public function pagination($per_page, $page, $busca = null){
+	//recebe o número da página que será exibida, inicia na 1
+	public function pagination($per_page, $page, $busca = null){
 
-	//Quantidade de itens por pagina
-	$loc = ($page-1) * $per_page;
+		//Quantidade de itens por pagina
+		$loc = ($page-1) * $per_page;
 
-	$where = [];
-	$values = [];
-	if ($busca != null){
-		#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields
-		$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
-		
-		foreach($fields as $field ){
-			array_push($where, $this->decamelize($field)." like ?");
-			array_push($values,"%".$busca."%");
+		$where = [];
+		$values = [];
+		if ($busca != null){
+			#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields
+			$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
+			
+			foreach($fields as $field ){
+				array_push($where, $this->decamelize($field)." like ?");
+				array_push($values,"%".$busca."%");
+			}
 		}
+		$where = implode(" or ", $where);
+		
+		//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
+		$list = R::findAll($this->table , $where . " ORDER BY " . $this->decamelize($this->fields[0]) 
+						. " LIMIT $loc,$per_page ", $values );
+		
+		//Recupera a quantidade total de itens na tabela
+		$qtd = R::count($this->table, $where, $values );
+		
+		//Retorna um array com os dados, total de registros,
+		//qtd de itens por pagina e a quantidade máxima de páginas
+		return ["data"=>$list,"total_rows"=>$qtd, "per_page"=>$per_page, "page_max"=>ceil($qtd/$per_page)];
 	}
-	$where = implode(" or ", $where);
-	
-	//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
-	$list = R::findAll($this->table , $where . " ORDER BY " . $this->decamelize($this->fields[0]) 
-					. " LIMIT $loc,$per_page ", $values );
-	
-	//Recupera a quantidade total de itens na tabela
-	$qtd = R::count($this->table, $where, $values );
-	
-	//Retorna um array com os dados, total de registros,
-	//qtd de itens por pagina e a quantidade máxima de páginas
-	return ["data"=>$list,"total_rows"=>$qtd, "per_page"=>$per_page, "page_max"=>ceil($qtd/$per_page)];
-}
-	
+		
+	public function options($field){
+		$all = R::getAll("select id, {$field} from {$this->table}");
+		return [""] + toOptions($all);
+	}
 	
 	public function all(){
 		

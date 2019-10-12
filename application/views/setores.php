@@ -23,15 +23,7 @@
 
 <div class="field">
 	<label>Adicionar pessoa
-		
-		<select name="pessoa_id">
-			<option value=""></option>
-			<?php
-			foreach($pessoas as $p){
-				print "<option value='{$p['id']}'>{$p['nome']}</option>";
-			}
-			?>
-		</select>
+		<?=form_dropdown("pessoa_id", $pessoas);?>
 	</label>
 </div>
 

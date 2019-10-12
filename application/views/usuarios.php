@@ -46,21 +46,7 @@
 if (Seguranca::temPermissao("Admin")): ?>
 <div class="field">
 	<label>Nível de acesso
-		<select name="nivel">
-			<option></option>
-			<?php
-			foreach($niveis as $key=>$item){
-				
-				if (val($dados,'nivel') == $key){
-					$selected = "selected";
-				} else {
-					$selected = "";
-				}
-
-				print "<option $selected value='{$key}'>{$item}</option>";
-			}
-			?>
-		</select>
+		<?=form_dropdown("nivel", $niveis, val($dados,"nivel"));?>
 		<?=error('nivel')?>
 	</label>
 </div>
@@ -68,22 +54,8 @@ if (Seguranca::temPermissao("Admin")): ?>
 
 <div class="field">
 	<label>Setor
-		<select name="setores_id">
-			<option></option>
-			<?php
-			foreach($setores as $item){
-				
-				if (val($dados,'setores_id') == $item['id']){
-					$selected = "selected";
-				} else {
-					$selected = "";
-				}
-
-				print "<option $selected value='{$item['id']}'>{$item['nome']}</option>";
-			}
-			?>
-		</select>
-		<?=error('setores_id')?>
+	<?=form_dropdown("setores_id", $setores, val($dados,"setores_id"));?>
+	<?=error('setores_id')?>
 	</label>
 </div>
 
@@ -91,14 +63,7 @@ if (Seguranca::temPermissao("Admin")): ?>
 
 <div class="field">
 	<label>Adicionar grupo
-		<select name="grupo_id">
-			<option value=""></option>
-			<?php
-			foreach($grupos as $item){
-				print "<option value='{$item['id']}'>{$item['nome']}</option>";
-			}
-			?>
-		</select>
+		<?=form_dropdown("grupo_id", $grupos);?>
 	</label>
 </div>
 
@@ -145,18 +110,31 @@ foreach($dados->ownGruposusuariosList as $gruposusuarios){
 	<div class="six fields">
 		<?php
 		foreach($tiposUsuarios as $key=>$tipo){
-			if (val($dados,"tipo") == $key){
-				$checked = "checked";
-			} else {
-				$checked = "";
-			}
-			print "<label class='field'><input type='radio' name='tipo' $checked value='$key'>$tipo</label>";
+			
+			print "<label class='field'>";
+			print form_radio("tipo",$key, checked($key, $dados,"tipo") );
+			print "$tipo</label>";
 		}
 		?>
 		<?=error('tipo')?>
 	</div>
 </div>
 
+
+<div class="field">
+	<label>Área de atuação</label>
+	<div class="five fields">
+		<input type="hidden" name="area[]">
+		<?php
+		foreach($areasUsuarios as $key=>$tipo){			
+			print "<label class='field'>";
+			print form_checkbox("area[]",$key, checked($key, $dados,"area"));
+			print "$tipo</label>";
+		}
+		?>
+		<?=error('area[]')?>
+	</div>
+</div>
 
 <div class="field">
 	<label>Foto

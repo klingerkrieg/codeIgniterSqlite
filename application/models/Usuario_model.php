@@ -4,14 +4,14 @@ class Usuario_model extends AbstractModel {
 
 	#nomes de tabelas e campos nao podem ter _ - ou letras maiusculas
 	public $table = "usuarios";
-	public $fields = ["nome","email","senha", "tipo", "foto", "nivel"];
+	public $fields = ["nome","email","senha", "tipo", "area"=>"array", "foto", "nivel"=>"secure"];
 	public $searchFields = ["nome","email"];
 	public $tiposUsuarios = [1=>"Professor", 2=>"Técnico", 3=>"Bolsista"];
+	public $areasUsuarios = [1=>"Programação", 2=>"Banco de dados", 3=>"Redes", 4=>"Manutenção"];
 	
 	#Seguranca
 	#variável que contem os níveis
 	public $secureLevels = [1=>"Admin", 2=>"Comum", 3=>"Convidado"];
-	public $secureField = "nivel";#campo responsável por definir o nível de seguranca
 	
 
 	#varios usuarios podem ter o mesmo setor
