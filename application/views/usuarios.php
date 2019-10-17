@@ -93,7 +93,7 @@ foreach($dados->ownGruposusuariosList as $gruposusuarios){
 
 	#para remover o usuario eu preciso passar a id_usuario
 	#depois a id do registro da tabela gruposusuarios
-	print "<td><a href='".site_url()."/usuarios/remover_grupo/{$dados['id']}/{$gruposusuarios->id}'> Remover </a></td>";
+	print "<td><a onclick='confirmDelete(\"".site_url()."/usuarios/remover_grupo/{$dados['id']}/{$gruposusuarios->id}\")' > Remover </a></td>";
 	
 	print "</tr>";
 }

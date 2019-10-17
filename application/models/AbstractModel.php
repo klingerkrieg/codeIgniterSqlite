@@ -207,7 +207,7 @@ class AbstractModel extends CI_Model {
 		#verifica se existe relacionamentos
 		if ($this->oneToMany){
 			foreach($this->oneToMany as $rel){
-				if (val($data,$rel["key"]) != "" ){
+				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
 					#recupera o item da tabela
 					$another = R::load($rel["table"], $data[$rel["key"]]);
 					#para relacionar um para muitos utilize essa notacao
@@ -221,7 +221,7 @@ class AbstractModel extends CI_Model {
 
 		if ($this->manyToOne){
 			foreach($this->manyToOne as $rel){
-				if (val($data,$rel["key"]) != ""){
+				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
 					#recupera o item da tabela
 					$another = R::load($rel["table"],$data[$rel["key"]]);
 					$tblName = $rel["table"];
@@ -233,7 +233,7 @@ class AbstractModel extends CI_Model {
 
 		if ($this->manyToMany){
 			foreach($this->manyToMany as $rel){
-				if (val($data,$rel["key"]) != "" ){
+				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
 					#recupera o item da tabela
 					$another = R::load($rel["table"], $data[$rel["key"]]);
 					#cria a tabela de associacao

@@ -53,7 +53,7 @@ foreach($dados->ownUsuariosList as $ln){
 	print "<td>{$ln->email}</td>";
 	
 	#para remover o usuario eu preciso passar a id_setor e depois id_usuario
-	print "<td><a href='".site_url()."/setores/remover_usuario/{$dados['id']}/{$ln->id}'> Remover </a></td>";
+	print "<td><a onclick='confirmDelete(\"".site_url()."/setores/remover_usuario/{$dados['id']}/{$ln->id}\")' > Remover </a></td>";
 	
 	print "</tr>";
 }
