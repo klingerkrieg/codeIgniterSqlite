@@ -65,9 +65,6 @@ class AbstractModel extends CI_Model {
 			foreach($this->arrayFields as $field){
 				if (isset($obj->$field) && !is_array($obj->$field))
 					$obj->$field = explode(";",$obj->$field);
-					/*if (is_array($obj->$field) && count($obj->$field) == 1 && $obj->$field[0] == ""){
-						$obj->$field = [];
-					}*/
 			}
 		}
 		return $obj;
@@ -124,23 +121,117 @@ class AbstractModel extends CI_Model {
 
 		$where = [];
 		$values = [];
-		if ($busca != null){
-			#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields
-			$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
-			
+		$joins = [];
+
+		#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields
+		$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
+
+		if (is_array($busca)){
+
 			foreach($fields as $field ){
-				array_push($where, $this->decamelize($field)." like ?");
-				array_push($values,"%".$busca."%");
+
+				
+				if (isset($busca[$field])){
+
+					# se for campos de checkbox
+					if (is_array($busca[$field])){
+
+						#se estiver entre os campos de array
+						#quer dizer que no banco estará salvo separado por ;
+						if (in_array($field,$this->arrayFields)){
+
+							$chk = [];
+							$writer = R::getWriter();
+							foreach($busca[$field] as $v){
+								array_push($chk, "$field like '%;".addslashes ($v).";%'");
+							}
+							$chk = "(" . implode(" or ", $chk) . ")";
+							#gera algo como: (field like '%;1;%' or field like '%;2;%')
+							array_push($where, $chk);
+
+						} else {
+
+							$chk = [];
+							$writer = R::getWriter();
+							foreach($busca[$field] as $v){
+								array_push($chk, addslashes ($v));
+							}
+							$chk = implode(",",$chk);
+							#gera algo como: field IN (1,2)
+							array_push($where, $this->decamelize($field)." IN ($chk)");
+						}
+						continue;
+					} else
+					if (trim($busca[$field]) == ""){
+						continue;
+					}
+
+
+					$tbl = "";
+					if (strstr($field,"_id")){
+
+						#se valor for igual a 0
+						if ($busca[$field] == "0"){
+							continue;
+						}
+
+						#constroi o nome da tabela
+						$tbl = str_replace("_id","",$field);
+						$joinField = "";
+						#procura nos relacionamentos muitos para muitos
+						foreach($this->manyToMany as $rel){
+							if ($rel["table"] == $tbl){
+								$joinField = $rel["assocTable"].".".$field;
+
+								#$joinStr = "inner join $tbl on $tbl.id = $joinField and "
+								#		." {$this->table}.id = {$rel['assocTable']}.{$this->table}_id ";
+
+								$joinStr = "inner join {$rel['assocTable']} on "
+										." {$this->table}.id = {$rel['assocTable']}.{$this->table}_id ";
+
+
+								array_push($joins, $joinStr);
+							}
+						}
+						
+					}
+
+					array_push($where, $this->decamelize($field)." like ?");
+					array_push($values,"%".$busca[$field]."%");
+				}
+			}
+
+			$where = implode(" AND ", $where);
+			if ($where != ""){
+				$where = " WHERE " . $where;
+			}
+
+		} else {
+			if ($busca != null){
+				
+				foreach($fields as $field ){
+					array_push($where, $this->decamelize($field)." like ?");
+					array_push($values,"%".$busca."%");
+				}
+			}
+
+			$where = implode(" or ", $where);
+			if ($where != ""){
+				$where = " WHERE " . $where;
 			}
 		}
-		$where = implode(" or ", $where);
+		
+		$joins = implode (" ", $joins);
 		
 		//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
-		$list = R::findAll($this->table , $where . " ORDER BY " . $this->decamelize($this->fields[0]) 
-						. " LIMIT $loc,$per_page ", $values );
+		$list = R::findAll($this->table , $joins 
+							. $where 
+							. " ORDER BY " 
+							. $this->decamelize($this->fields[0]) 
+							. " LIMIT $loc,$per_page ", $values );
 		
 		//Recupera a quantidade total de itens na tabela
-		$qtd = R::count($this->table, $where, $values );
+		$qtd = R::count($this->table, $joins . $where, $values );
 		
 		//Retorna um array com os dados, total de registros,
 		//qtd de itens por pagina e a quantidade máxima de páginas
@@ -198,7 +289,7 @@ class AbstractModel extends CI_Model {
 		
 		foreach($fields as $key=>$val){
 			if (is_array($val)){
-				$obj[$key] = implode(";",$val);
+				$obj[$key] = implode(";",$val).";";
 			} else {
 				$obj[$key] = $val;
 			}

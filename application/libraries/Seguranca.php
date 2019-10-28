@@ -4,6 +4,7 @@
 class Seguranca {
     private $tabela = null;
     private $campo = null;
+    private static $desativado = false;
 
     public static function permitir($nivel){
         if (!Seguranca::temPermissao($nivel)){
@@ -14,6 +15,11 @@ class Seguranca {
     }
 
     public static function temPermissao($nivel){
+
+        if (self::$desativado){
+            return true;
+        }
+
         $model = $_SESSION["model_seguranca"];
 
         $CI =& get_instance();

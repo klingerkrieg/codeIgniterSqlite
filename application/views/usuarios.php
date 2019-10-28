@@ -161,6 +161,7 @@ foreach($dados->ownGruposusuariosList as $gruposusuarios){
 	<div class="fields">
 		<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
 		<button  class="ui blue button" type="submit">Pesquisar</button>
+		<a class="ui button" href="<?=site_url()?>/usuarios/busca">Busca avançada</a>
 	</div>
 </form>
 
