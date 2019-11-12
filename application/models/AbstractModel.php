@@ -20,6 +20,8 @@ class AbstractModel extends CI_Model {
 
 	public $arrayFields = false;
 
+	public $saveLog = true;
+
 	public function __construct(){
 		parent::__construct();
 
@@ -97,7 +99,17 @@ class AbstractModel extends CI_Model {
 		} else {
 			//caso contrário, busca no banco
 			//aquele elemento da tabela que tem aquela id
-			return $this->parseArrayFields(R::load($this->table,$id));
+			$obj = R::load($this->table,$id);
+
+			#busca os registros relacionados
+			if ($this->manyToOne != false){
+				foreach($this->manyToOne as $rel){
+					$name = $rel["table"];
+					$disc = $obj->fetchAs( $rel["table"] )->$name;
+				}
+			}
+
+			return $this->parseArrayFields($obj);
 		}
 	}
 
@@ -114,7 +126,7 @@ class AbstractModel extends CI_Model {
 	}
 
 	//recebe o número da página que será exibida, inicia na 1
-	public function pagination($per_page, $page, $busca = null){
+	public function pagination($per_page, $page, $busca = null, $orderBy = null){
 
 		//Quantidade de itens por pagina
 		$loc = ($page-1) * $per_page;
@@ -132,6 +144,11 @@ class AbstractModel extends CI_Model {
 
 				
 				if (isset($busca[$field])){
+
+					#se valor for igual a 0
+					if ($busca[$field] == "0"){
+						continue;
+					}
 
 					# se for campos de checkbox
 					if (is_array($busca[$field])){
@@ -170,11 +187,6 @@ class AbstractModel extends CI_Model {
 					$tbl = "";
 					if (strstr($field,"_id")){
 
-						#se valor for igual a 0
-						if ($busca[$field] == "0"){
-							continue;
-						}
-
 						#constroi o nome da tabela
 						$tbl = str_replace("_id","",$field);
 						$joinField = "";
@@ -182,9 +194,6 @@ class AbstractModel extends CI_Model {
 						foreach($this->manyToMany as $rel){
 							if ($rel["table"] == $tbl){
 								$joinField = $rel["assocTable"].".".$field;
-
-								#$joinStr = "inner join $tbl on $tbl.id = $joinField and "
-								#		." {$this->table}.id = {$rel['assocTable']}.{$this->table}_id ";
 
 								$joinStr = "inner join {$rel['assocTable']} on "
 										." {$this->table}.id = {$rel['assocTable']}.{$this->table}_id ";
@@ -210,6 +219,12 @@ class AbstractModel extends CI_Model {
 			if ($busca != null){
 				
 				foreach($fields as $field ){
+
+					#ignora busca em outras tabelas
+					if (strstr($field,"_id")){
+						continue;
+					}
+
 					array_push($where, $this->decamelize($field)." like ?");
 					array_push($values,"%".$busca."%");
 				}
@@ -222,12 +237,16 @@ class AbstractModel extends CI_Model {
 		}
 		
 		$joins = implode (" ", $joins);
+
+		if ($orderBy == null){
+			$orderBy = $this->decamelize($this->fields[0]);
+		}
 		
 		//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
 		$list = R::findAll($this->table , $joins 
 							. $where 
 							. " ORDER BY " 
-							. $this->decamelize($this->fields[0]) 
+							. $orderBy
 							. " LIMIT $loc,$per_page ", $values );
 		
 		//Recupera a quantidade total de itens na tabela
@@ -252,7 +271,27 @@ class AbstractModel extends CI_Model {
 	public function delete($id){
 		
 		$obj = R::load($this->table,$id);
+		
+		#remove os registros associados
+		foreach($this->manyToMany as $rel){
+			$var = "own".ucfirst($rel["assocTable"])."List";
+			foreach ($obj->$var as $assoc ){
+				R::trash($assoc);
+			}
+		}
+		#desfaz as associacoes
+		foreach($this->oneToMany as $rel){
+			$var = "own".ucfirst($rel["assocTable"])."List";
+			foreach ($obj->$var as $assoc ){
+				$tbl = $this->table;
+				$assoc->$tbl = null;
+				R::store($assoc);
+			}
+		}		
+
+
 		R::trash($obj);
+		$this->saveLog();
 		
 	}
 
@@ -291,7 +330,7 @@ class AbstractModel extends CI_Model {
 			if (is_array($val)){
 				$obj[$key] = implode(";",$val).";";
 			} else {
-				$obj[$key] = $val;
+				$obj[$key] = trim($val);
 			}
 		}
 
@@ -353,7 +392,29 @@ class AbstractModel extends CI_Model {
 
 		$this->posSave($obj, $data);
 
+		$this->saveLog();
+
 		return $id;
+	}
+
+
+	public function saveLog(){
+		if ($this->saveLog){
+
+			$logs = R::getLogs();
+
+			foreach($logs as $log){
+				if (strstr(strtolower($log),"insert") ||
+					strstr(strtolower($log),"update") || 
+					strstr(strtolower($log),"delete")){
+
+						$dblog = R::dispense("logs");
+						$dblog->usuario_id = val($_SESSION,"user_id");
+						$dblog->sql = strip_tags($log);
+						R::store($dblog);
+				}
+			}
+		}
 	}
 
 

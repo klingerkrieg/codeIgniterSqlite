@@ -90,6 +90,7 @@ foreach($dados->ownGruposusuariosList as $gruposusuarios){
 		<tr>
 			<th>Editar</th>
 			<th>Nome</th>
+			<th>Qtd. Usuários</th>
 			<th>Deletar</th>
 		</tr>
 	</thead>
@@ -104,6 +105,8 @@ foreach($listaPaginada["data"] as $ln){
 	print "<td><a href='".site_url()."/grupos/index/{$ln->id}'> Editar </a></td>";
 	
 	print "<td>{$ln->nome}</td>";
+
+	print "<td>". count($ln->ownGruposusuariosList) ."</td>";
 
 	print "<td><a onclick='confirmDelete(\"".site_url()."/grupos/deletar/{$ln->id}\")'> Deletar </a></td>";
 	
