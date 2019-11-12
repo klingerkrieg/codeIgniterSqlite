@@ -770,10 +770,13 @@ class RPDO implements Driver
 			//Unfortunately the code field is supposed to be int by default (php)
 			//So we need a property to convey the SQL State code.
 			$err = $e->getMessage();
+			$err .= $sql;
+			
 			if ( $this->loggingEnabled && $this->logger ) $this->logger->log( 'An error occurred: ' . $err );
 			$exception = new SQL( $err, 0, $e );
 			$exception->setSQLState( $e->getCode() );
 			$exception->setDriverDetails( $e->errorInfo );
+			
 			throw $exception;
 		}
 	}

@@ -15,9 +15,12 @@ function prepare_fields($fields,$post){
 }
 
 
-function val($arr,$key){
+function val($arr,$key,$subKey=null){
 	
 	if (isset($arr[$key])){
+		if ($subKey != null){
+			return val($arr[$key],$subKey);
+		}
 		return $arr[$key];
 	} else {
 		return "";
@@ -55,7 +58,7 @@ class Rb {
 			// SQLITE
 			R::setup( $dsn );
 		} else
-		if ($driver == "mysql"){
+		if ($driver == "mysqli"){
 			// MYSQL
 			R::setup("mysql:host=$host;dbname=$db", $user, $pass);
 		} else {
@@ -64,10 +67,12 @@ class Rb {
 		}
 
 
-		if (ENVIRONMENT == "development"){
-			R::fancyDebug();
-			R::getDatabaseAdapter()->getDatabase()->getLogger()->setMode(1);
+		if (ENVIRONMENT != "development"){
+			$_SESSION["logs"] = [];
 		}
+		R::fancyDebug();
+		R::getDatabaseAdapter()->getDatabase()->getLogger()->setMode(1);
+		
         
     } //end __contruct()
 } //end Rb

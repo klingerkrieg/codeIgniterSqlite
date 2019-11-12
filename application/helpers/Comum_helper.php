@@ -19,7 +19,12 @@ if (!function_exists("checked")){
     function toOptions($arr){
         $arr2 = [];
         foreach($arr as $val){
-            $arr2[$val["id"]] = $val["nome"];
+            #encontra qual o campo que deve ser exibido para o usuario
+            $temp = $val;
+            unset($temp["id"]);
+            $keys = array_keys($temp);
+
+            $arr2[$val["id"]] = $val[$keys[0]];
         }
         return $arr2;
     }

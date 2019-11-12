@@ -20,7 +20,7 @@ a{
 }
 
 .debugger p{
-    white-space: pre;
+    white-space: initial;
 }
 
 .flex{
