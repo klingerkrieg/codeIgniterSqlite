@@ -33,10 +33,10 @@ class Grupos extends CI_Controller {
 		//se for para abrir algum registro
 		$dados = $this->Grupo_model->get($id);
 
-
+		
 		//Seleciona todas as pessoas que ainda nao estao naquele Grupo
 		$this->load->model("Usuario_model");
-		$pessoas = $this->Usuario_model->options("email");
+		$pessoas = $this->Usuario_model->options("nome");
 		
 		$this->load->view('grupos', ["listaPaginada"=>$listaPaginada,
 										"dados"=>$dados,

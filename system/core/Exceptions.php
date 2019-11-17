@@ -126,21 +126,23 @@ class CI_Exceptions {
 		else
 		{
 			$heading = '404 Page Not Found';
-			$message = "O controle ou método <b>{$page}</b> não foi encontrado. Verifique o nome do arquivo, o nome da classe dentro do arquivo e o nome do método.";
-			$message .= "<br/>Lembre-se que o nome do arquivo deve ser o mesmo nome da classe:<br/>";
+			if (ENVIRONMENT != "production"){
+				$message = "O controle ou método <b>{$page}</b> não foi encontrado. Verifique o nome do arquivo, o nome da classe dentro do arquivo e o nome do método.";
+				$message .= "<br/>Lembre-se que o nome do arquivo deve ser o mesmo nome da classe:<br/>";
 
-			$parts = explode("/",$page);
-			$file = $parts[0];
-			$method = $parts[1];
+				$parts = explode("/",$page);
+				$file = $parts[0];
+				$method = $parts[1];
 
-			$message .= "<pre>";
-			$message .= "			controllers/<b>{$file}</b>.php
-			class <b>{$file}</b> extends CI_Controller {
-				public function <b>{$method}</b>(...){
-					...
-				}
-			}";
-			$message .= "</pre>";
+				$message .= "<pre>";
+				$message .= "			controllers/<b>{$file}</b>.php
+				class <b>{$file}</b> extends CI_Controller {
+					public function <b>{$method}</b>(...){
+						...
+					}
+				}";
+				$message .= "</pre>";
+			}
 		}
 
 		// By default we log this, but allow a dev to skip it

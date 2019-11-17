@@ -54,7 +54,7 @@ if (Seguranca::temPermissao("Admin")): ?>
 
 <div class="field">
 	<label>Setor
-	<?=form_dropdown("setores_id", $setores, val($dados,"setores_id"));?>
+	<?=form_dropdown("setor_id", $setores, val($dados,"setores_id"));?>
 	<?=error('setores_id')?>
 	</label>
 </div>

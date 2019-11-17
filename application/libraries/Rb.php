@@ -67,8 +67,9 @@ class Rb {
 		}
 
 
-		if (ENVIRONMENT != "development"){
+		if (ENVIRONMENT == "production"){
 			$_SESSION["logs"] = [];
+			R::freeze(true);
 		}
 		R::fancyDebug();
 		R::getDatabaseAdapter()->getDatabase()->getLogger()->setMode(1);

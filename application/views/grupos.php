@@ -23,7 +23,7 @@
 
 <div class="field">
 	<label>Adicionar pessoa
-		<?=form_dropdown("pessoa_id", $pessoas);?>
+		<?=form_dropdown("usuario_id", $pessoas);?>
 	</label>
 </div>
 

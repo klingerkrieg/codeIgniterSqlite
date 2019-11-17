@@ -137,7 +137,6 @@ class Usuarios extends CI_Controller {
 		}
 		$this->form_validation->set_rules('nome', 'Nome', 'required');
 		$this->form_validation->set_rules('email', 'E-mail', 'required|valid_email');
-		$this->form_validation->set_rules('setores_id', 'Setor', 'required');
 
 		#A permissao só será obrigatória quando a pessoa que estiver cadastrando
 		#tiver o nivel de acesso necessário
