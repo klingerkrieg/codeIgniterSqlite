@@ -192,7 +192,8 @@ class AbstractModel extends CI_Model {
 						$joinField = "";
 						#procura nos relacionamentos muitos para muitos
 						foreach($this->manyToMany as $rel){
-							if ($rel["table"] == $tbl){
+							if (strstr($tbl,$rel["table"])){#permite funcionar no singular ou plural
+															#groups_id group_id
 								$joinField = $rel["assocTable"].".".$field;
 
 								$joinStr = "inner join {$rel['assocTable']} on "

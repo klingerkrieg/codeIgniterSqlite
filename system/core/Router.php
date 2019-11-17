@@ -290,9 +290,10 @@ class CI_Router {
 	public $defaultController = false;
 	protected function _set_default_controller()
 	{
-		if (empty($this->default_controller))
-		{
-			show_error("<p>Você não definiu um controle principal em config/<b>routes.php</b>.</p><br/><pre>	\$route['default_controller'] = '<b>um_controle_aqui</b>';</pre>");
+		if (empty($this->default_controller)){
+			if (ENVIRONMENT != "production"){
+				show_error("<p>Você não definiu um controle principal em config/<b>routes.php</b>.</p><br/><pre>	\$route['default_controller'] = '<b>um_controle_aqui</b>';</pre>");
+			}
 		}
 
 		// Is the method being specified?
@@ -303,9 +304,11 @@ class CI_Router {
 
 		if ( ! file_exists(APPPATH.'controllers/'.$this->directory.ucfirst($class).'.php'))
 		{
-			global $cg_error;
-			$cg_error = "<p>Você definiu <b>{$class}</b> como o controle principal em config/routes.php, porém esse controle não existe.</p>";
-			$cg_error .= "<br/><pre>	\$route['default_controller'] = '{$class}';</pre>";
+			if (ENVIRONMENT != "production"){
+				global $cg_error;
+				$cg_error = "<p>Você definiu <b>{$class}</b> como o controle principal em config/routes.php, porém esse controle não existe.</p>";
+				$cg_error .= "<br/><pre>	\$route['default_controller'] = '{$class}';</pre>";
+			}
 			$this->set_class($class);
 			// This will trigger 404 later
 			return;

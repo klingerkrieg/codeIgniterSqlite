@@ -344,20 +344,24 @@ class CI_Loader {
 				}
 
 				require_once($mod_path.'models/'.$path.$model.'.php');
-				if ( ! class_exists($model, FALSE))
-				{
-					$msg = "models/<b>{$model}</b>.php existe, mas você não declarou a classe ".$model;
-					$msg .= $model_help;
+				if ( ! class_exists($model, FALSE)) {
+					$msg = "";
+					if (ENVIRONMENT != "production"){
+						$msg = "models/<b>{$model}</b>.php existe, mas você não declarou a classe ".$model;
+						$msg .= $model_help;
+					}
 					throw new RuntimeException($msg);
 				}
 
 				break;
 			}
 
-			if ( ! class_exists($model, FALSE))
-			{
-				$msg = "Não foi possível encontrar o model: <b>{$model}</b>";
-				$msg .= $model_help;
+			if ( ! class_exists($model, FALSE)){
+				$msg = "";
+				if (ENVIRONMENT != "production"){
+					$msg = "Não foi possível encontrar o model: <b>{$model}</b>";
+					$msg .= $model_help;
+				}
 				
 				throw new RuntimeException($msg);
 			}
@@ -634,9 +638,10 @@ class CI_Loader {
 			if ($ext_loaded === TRUE)
 			{
 				$base_helper = BASEPATH.'helpers/'.$helper.'.php';
-				if ( ! file_exists($base_helper))
-				{
-					show_error('Unable to load the requested file: helpers/'.$helper.'.php');
+				if ( ! file_exists($base_helper)) {
+					if (ENVIRONMENT != "production"){
+						show_error('Não foi possível encontrar o arquivo: helpers/'.$helper.'.php');
+					}
 				}
 
 				include_once($base_helper);
@@ -661,7 +666,7 @@ class CI_Loader {
 			// unable to load the helper
 			if ( ! isset($this->_ci_helpers[$helper]))
 			{
-				show_error('Unable to load the requested file: helpers/'.$helper.'.php');
+				show_error('Não foi possível encontrar o arquivo: helpers/'.$helper.'.php');
 			}
 		}
 
@@ -930,9 +935,10 @@ class CI_Loader {
 			}
 		}
 
-		if ( ! $file_exists && ! file_exists($_ci_path))
-		{
-			show_error('Unable to load the requested file: '.$_ci_file);
+		if ( ! $file_exists && ! file_exists($_ci_path)) {
+			if (ENVIRONMENT != "production"){
+				show_error('Não foi possível encontrar a view, verifique se o nome está correto: '.$_ci_file);
+			}
 		}
 
 		// This allows anything loaded using $this->load (views, files, etc.)
@@ -1105,7 +1111,7 @@ class CI_Loader {
 
 		// If we got this far we were unable to find the requested class.
 		log_message('error', 'Unable to load the requested class: '.$class);
-		show_error('Unable to load the requested class: '.$class);
+		show_error('Não foi possível encontrar a classe: library/'.$class);
 	}
 
 	// --------------------------------------------------------------------
