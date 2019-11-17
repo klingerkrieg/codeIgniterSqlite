@@ -26,9 +26,12 @@ class Usuario_model extends AbstractModel {
 
 	#varios usuarios podem ter o mesmo setor
 	#a key é o campo no formulario que contem a id do setor
-	public $manyToOne = [["table"=>"setores", "key"=>"setore_id"]];
+	public $manyToOne = [["table"=>"setores", 
+						  "key"=>"setores_id"]];
 
-	public $manyToMany = [["table"=>"grupos","key"=>"grupo_id", "assocTable"=>"gruposusuarios"]];
+	public $manyToMany = [["table"=>"grupos",
+						   "key"=>"grupos_id", 
+						   "assocTable"=>"gruposusuarios"]];
 	
 
 	public function login($data){

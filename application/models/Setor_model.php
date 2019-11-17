@@ -9,7 +9,8 @@ class Setor_model extends AbstractModel {
 		
 		#um setor pode ter varios usuarios
 		#a key é o campo no formulário que contém a id do usuário
-		public $oneToMany = [["table"=>"usuarios", "key"=>"usuario_id"]];
+		public $oneToMany = [["table"=>"usuarios", 
+							  "key"=>"usuarios_id"]];
 
 
 		

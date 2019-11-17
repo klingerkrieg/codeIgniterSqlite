@@ -35,14 +35,14 @@ if (Seguranca::temPermissao("Admin")): ?>
 
 <div class="field">
 	<label>Setor
-	<?=form_dropdown("setore_id", $setores, val($_GET,"setore_id"));?>
+	<?=form_dropdown("setores_id", $setores, val($_GET,"setores_id"));?>
 	</label>
 </div>
 
 
 <div class="field">
 	<label>Grupo
-	<?=form_dropdown("grupo_id", $grupos, val($_GET,"grupo_id"));?>
+	<?=form_dropdown("grupos_id", $grupos, val($_GET,"grupos_id"));?>
 	</label>
 </div>
 

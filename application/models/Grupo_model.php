@@ -10,7 +10,7 @@ class Grupo_model extends AbstractModel {
 		#um usuário pode ter vários grupos
 		#essa associação requer o assocTable com o nome da tabela associativa		
 		public $manyToMany = [["table"=>"usuarios",
-								"key"=>"usuario_id", 
+								"key"=>"usuarios_id", 
 								"assocTable"=>"gruposusuarios"]];
 
 
