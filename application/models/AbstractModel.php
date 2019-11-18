@@ -274,21 +274,23 @@ class AbstractModel extends CI_Model {
 		$obj = R::load($this->table,$id);
 		
 		#remove os registros associados
-		foreach($this->manyToMany as $rel){
-			$var = "own".ucfirst($rel["assocTable"])."List";
-			foreach ($obj->$var as $assoc ){
-				R::trash($assoc);
+		if ($this->manyToMany)
+			foreach($this->manyToMany as $rel){
+				$var = "own".ucfirst($rel["assocTable"])."List";
+				foreach ($obj->$var as $assoc ){
+					R::trash($assoc);
+				}
 			}
-		}
-		#desfaz as associacoes
-		foreach($this->oneToMany as $rel){
-			$var = "own".ucfirst($rel["assocTable"])."List";
-			foreach ($obj->$var as $assoc ){
-				$tbl = $this->table;
-				$assoc->$tbl = null;
-				R::store($assoc);
-			}
-		}		
+		if ($this->oneToMany)
+			#desfaz as associacoes
+			foreach($this->oneToMany as $rel){
+				$var = "own".ucfirst($rel["assocTable"])."List";
+				foreach ($obj->$var as $assoc ){
+					$tbl = $this->table;
+					$assoc->$tbl = null;
+					R::store($assoc);
+				}
+			}		
 
 
 		R::trash($obj);

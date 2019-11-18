@@ -1,0 +1,173 @@
+{
+  "id": "9f854ec0-76a7-463d-b769-196d70f3b3d6",
+  "version": "2.0",
+  "name": "crud_basico",
+  "url": "http://localhost",
+  "tests": [{
+    "id": "e6bcc7fd-e610-49e7-9f17-52d87835ad1a",
+    "name": "crud",
+    "commands": [{
+      "id": "38d8000b-c04f-40d6-8ee9-868ff3470797",
+      "comment": "",
+      "command": "open",
+      "target": "/sqlite-merged/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "ff6a2f94-f72d-4dda-a572-84ac85dd6a45",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1295x695",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "4682c75c-d050-452e-9604-e67ea512c347",
+      "comment": "",
+      "command": "type",
+      "target": "name=nome",
+      "targets": [
+        ["name=nome", "name"],
+        ["css=.field:nth-child(2) input", "css:finder"],
+        ["xpath=//input[@name='nome']", "xpath:attributes"],
+        ["xpath=//label/input", "xpath:position"]
+      ],
+      "value": "000 teste 1"
+    }, {
+      "id": "0e596a24-cc8c-4f7d-8a94-34f78ecaa259",
+      "comment": "",
+      "command": "type",
+      "target": "name=email",
+      "targets": [
+        ["name=email", "name"],
+        ["css=.field:nth-child(3) input", "css:finder"],
+        ["xpath=//input[@name='email']", "xpath:attributes"],
+        ["xpath=//div[2]/label/input", "xpath:position"]
+      ],
+      "value": "teste1@gmail.com"
+    }, {
+      "id": "cd7a80ae-3e10-4903-93f2-e74eaaf688a0",
+      "comment": "",
+      "command": "type",
+      "target": "name=senha",
+      "targets": [
+        ["name=senha", "name"],
+        ["css=.field:nth-child(4) input", "css:finder"],
+        ["xpath=//input[@name='senha']", "xpath:attributes"],
+        ["xpath=//div[3]/label/input", "xpath:position"]
+      ],
+      "value": "123456"
+    }, {
+      "id": "7dd308f6-1cd5-4bde-95cf-9339ac970076",
+      "comment": "",
+      "command": "click",
+      "target": "css=.blue:nth-child(1)",
+      "targets": [
+        ["css=.blue:nth-child(1)", "css:finder"],
+        ["xpath=//button[@type='submit']", "xpath:attributes"],
+        ["xpath=//button", "xpath:position"],
+        ["xpath=//button[contains(.,'Salvar')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "9b016e94-1a60-4e2f-940a-a998b47e4e14",
+      "comment": "",
+      "command": "assertEditable",
+      "target": "name=nome",
+      "targets": [
+        ["name=nome", "name"],
+        ["css=.field:nth-child(2) input", "css:finder"],
+        ["xpath=//input[@name='nome']", "xpath:attributes"],
+        ["xpath=//label/input", "xpath:position"]
+      ],
+      "value": "000 teste 1"
+    }, {
+      "id": "4468b05b-14e7-4606-a1e0-36a91e3f53b5",
+      "comment": "",
+      "command": "assertEditable",
+      "target": "name=email",
+      "targets": [],
+      "value": "teste1@gmail.com"
+    }, {
+      "id": "878b8e28-9206-404e-8a97-493c8121de0b",
+      "comment": "",
+      "command": "assertEditable",
+      "target": "name=senha",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "88ac91c9-aadf-434a-afdd-ff8694039fb9",
+      "comment": "",
+      "command": "type",
+      "target": "name=nome",
+      "targets": [
+        ["name=nome", "name"],
+        ["css=.field:nth-child(2) input", "css:finder"],
+        ["xpath=//input[@name='nome']", "xpath:attributes"],
+        ["xpath=//label/input", "xpath:position"]
+      ],
+      "value": "000 teste 2"
+    }, {
+      "id": "eafc28ab-6970-4224-aa50-a732fbc6c094",
+      "comment": "",
+      "command": "click",
+      "target": "css=.blue:nth-child(1)",
+      "targets": [
+        ["css=.blue:nth-child(1)", "css:finder"],
+        ["xpath=//button[@type='submit']", "xpath:attributes"],
+        ["xpath=//button", "xpath:position"],
+        ["xpath=//button[contains(.,'Salvar')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "2d14b063-f04b-4264-b07a-c80b33469ecd",
+      "comment": "",
+      "command": "assertEditable",
+      "target": "name=nome",
+      "targets": [
+        ["name=nome", "name"],
+        ["css=.field:nth-child(2) input", "css:finder"],
+        ["xpath=//input[@name='nome']", "xpath:attributes"],
+        ["xpath=//label/input", "xpath:position"]
+      ],
+      "value": "000 teste 2"
+    }, {
+      "id": "fb1cb9ec-587a-433e-84cf-45416953dbdf",
+      "comment": "",
+      "command": "assertEditable",
+      "target": "name=email",
+      "targets": [],
+      "value": "teste1@gmail.com"
+    }, {
+      "id": "fcf793ef-4a21-4ea3-9ad4-cc5625d4b2be",
+      "comment": "",
+      "command": "assertEditable",
+      "target": "name=senha",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "7e92751c-537b-4ecc-a25a-4cd7809db715",
+      "comment": "",
+      "command": "click",
+      "target": "linkText=Deletar",
+      "targets": [
+        ["linkText=Deletar", "linkText"],
+        ["css=tr:nth-child(1) > td:nth-child(4) > a", "css:finder"],
+        ["xpath=//a[contains(text(),'Deletar')]", "xpath:link"],
+        ["xpath=//a[@href='http://[::1]/sqlite-merged//usuarios/deletar/51']", "xpath:href"],
+        ["xpath=//td[4]/a", "xpath:position"],
+        ["xpath=//a[contains(.,'Deletar')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }]
+  }],
+  "suites": [{
+    "id": "f839e62a-bb4b-425d-9cbb-0502b391f161",
+    "name": "Default Suite",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": ["e6bcc7fd-e610-49e7-9f17-52d87835ad1a"]
+  }],
+  "urls": ["http://localhost/"],
+  "plugins": []
+}
