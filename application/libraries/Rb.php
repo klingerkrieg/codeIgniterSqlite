@@ -1,5 +1,10 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
+/**
+ * Retorna um array que pode ser inserido no banco de dados
+ * ignora os dados de post que não estejam em fields
+ * se for uma chave estrangeira preenche com null
+ */
 function prepare_fields($fields,$post){
 	$f = [];
 	foreach($fields as $key){
@@ -14,7 +19,9 @@ function prepare_fields($fields,$post){
 	return $f;
 }
 
-
+/**
+ * Retorna o valor de um array, caso nao exista o valor, retorna em branco
+ */
 function val($arr,$key,$subKey=null){
 	
 	if (isset($arr[$key])){
