@@ -79,6 +79,8 @@ class AbstractModel extends CI_Model {
 
 			//se houver id no POST, provavelmente é porque houve erro de validacao
 			//retorna os dados que foram submetidos pelo formulário
+			//não é necessário que id tenha um valor
+			//o fato de existir a id, já indica que foi enviado pelo formulário
 			if (isset($_POST['id'])){
 				$data = $_POST;
 				if ($_POST['id'] != ""){
@@ -101,11 +103,16 @@ class AbstractModel extends CI_Model {
 			//aquele elemento da tabela que tem aquela id
 			$obj = R::load($this->table,$id);
 
+			#se nao encontrar nada, retorna um array vazio
+			if ($obj->id == 0){
+				return [];
+			}
+
 			#busca os registros relacionados
 			if ($this->manyToOne != false){
 				foreach($this->manyToOne as $rel){
-					$name = $rel["table"];
-					$disc = $obj->fetchAs( $rel["table"] )->$name;
+					$tblName = $rel["table"];
+					$disc = $obj->fetchAs( $tblName )->$tblName;
 				}
 			}
 
@@ -117,11 +124,13 @@ class AbstractModel extends CI_Model {
 		$where = [];
 		$whereData = [];
 		foreach($data as $key=>$value){
-			array_push($where, "$key = ?");
-			array_push($whereData, $value);
+			if (in_array($key,$this->fields)){
+				array_push($where, "$key = ?");
+				array_push($whereData, $value);
+			}
 		}
 		$where = implode(" and ", $where);
-
+		
 		return R::findOne($this->table,$where,$whereData);
 	}
 
@@ -285,7 +294,7 @@ class AbstractModel extends CI_Model {
 		#desfaz as associacoes
 		if ($this->oneToMany)
 			foreach($this->oneToMany as $rel){
-				$var = "own".ucfirst($rel["assocTable"])."List";
+				$var = "own".ucfirst($rel["table"])."List";
 				foreach ($obj->$var as $assoc ){
 					$tbl = $this->table;
 					$assoc->$tbl = null;

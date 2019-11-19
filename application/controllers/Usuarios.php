@@ -177,7 +177,12 @@ class Usuarios extends CI_Controller {
 
 		$this->Usuario_model->delete($id);
 		$this->session->set_flashdata("warning","<div class='ui yellow message'>Registro deletado.</div>");
-		redirect("usuarios/index");
+
+		if (isset($_GET["page"])){
+			$actPage = "?page={$_GET["page"]}";
+		}
+
+		redirect("usuarios/index$actPage");
 	}
 
 

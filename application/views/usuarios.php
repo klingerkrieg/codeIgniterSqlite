@@ -179,19 +179,23 @@ foreach($dados->ownGruposusuariosList as $gruposusuarios){
 	
 <?php
 
+$actPage = "";
+if (isset($_GET["page"])){
+	$actPage = "?page={$_GET["page"]}";
+}
 
 foreach($listaPaginada["data"] as $ln){
 	
 	print "<tr>";
 	
-	print "<td><a href='".site_url()."/usuarios/index/{$ln->id}'> Editar </a></td>";
+	print "<td><a href='".site_url()."/usuarios/index/{$ln->id}$actPage'> Editar </a></td>";
 	
 	print "<td>{$ln->nome}</td>";
 	print "<td>{$ln->email}</td>";
 	#link para abrir diretamente o setor já em modo de edição
 	@print "<td><a href='".site_url()."/setores/index/{$ln->setores->id}'> {$ln->setores->nome} </a> </td>";
 	
-	print "<td><a onclick='confirmDelete(\"".site_url()."/usuarios/deletar/{$ln->id}\")'> Deletar </a></td>";
+	print "<td><a onclick='confirmDelete(\"".site_url()."/usuarios/deletar/{$ln->id}$actPage\")'> Deletar </a></td>";
 	
 	print "</tr>";
 }
