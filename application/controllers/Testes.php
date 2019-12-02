@@ -259,9 +259,20 @@ class Testes extends CI_Controller {
 		$this->test($found, false, 'Usuario_model->delete (grupos->ownGruposusuariosList)');
 
 
+		$_SESSION["user_id"] = 1;
+
 		$this->Grupo_model->delete($id_grupo);
 		$grupo = $this->Usuario_model->get($id);
 		$this->test($grupo, [], 'Grupo_model->delete');
+
+
+
+		#log
+		$row = R::getRow('SELECT * FROM logs ORDER BY id DESC LIMIT 1 ');
+		$this->test($row['usuario_id'], 1, 'logs->usuario_id');
+		$json = json_decode($row['state']);
+		$this->test($json->id, $id_grupo, 'logs->grupos_id');
+
 		
 
 		#limpa os testes

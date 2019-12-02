@@ -280,6 +280,9 @@ class AbstractModel extends CI_Model {
 	}
 	
 	public function delete($id){
+
+		if ($this->saveLog)
+			$this->saveState($id);
 		
 		$obj = R::load($this->table,$id);
 		
@@ -400,14 +403,25 @@ class AbstractModel extends CI_Model {
 		}
 
 		$obj = $this->preSave($obj, $data);
+
+		if ($this->saveLog && $obj->id != 0)
+			$this->saveState($obj->id);
 		
 		$id = R::store($obj);
 
 		$this->posSave($obj, $data);
 
-		$this->saveLog();
+		if ($this->saveLog)
+			$this->saveLog();
 
 		return $id;
+	}
+
+
+	private $tmpState = "";
+	public function saveState($id){
+		$obj = R::load($this->table, $id);
+		$this->tmpState = json_encode($obj);
 	}
 
 
@@ -417,14 +431,16 @@ class AbstractModel extends CI_Model {
 			$logs = R::getLogs();
 
 			foreach($logs as $log){
-				if (strstr(strtolower($log),"insert") ||
-					strstr(strtolower($log),"update") || 
-					strstr(strtolower($log),"delete")){
-
-						$dblog = R::dispense("logs");
-						$dblog->usuario_id = val($_SESSION,"user_id");
-						$dblog->sql = strip_tags($log);
-						R::store($dblog);
+				
+				if (strstr(strtolower($log),"insert") 
+					|| strstr(strtolower($log),"update") 
+					|| strstr(strtolower($log),"delete")){
+					
+					$dblog = R::dispense("logs");
+					$dblog->usuario_id = val($_SESSION,"user_id");
+					$dblog->state = $this->tmpState;
+					$dblog->sql = strip_tags($log);
+					R::store($dblog);
 				}
 			}
 		}
