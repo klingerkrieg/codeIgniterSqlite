@@ -9,6 +9,7 @@ class AbstractModel extends CI_Model {
 
 	#para fazer associacoes entre tabelas
 	#defina uma matriz com os relacionamentos [['table'=>'usuarios', 'key'=>'usuario_id'], ...]
+	public $oneToOne = false;
 	public $oneToMany = false;
 	public $manyToOne = false;
 	#a matriz do manyToMany requer 3 itens
@@ -111,8 +112,29 @@ class AbstractModel extends CI_Model {
 			#busca os registros relacionados
 			if ($this->manyToOne != false){
 				foreach($this->manyToOne as $rel){
-					$tblName = $rel["table"];
-					$disc = $obj->fetchAs( $tblName )->$tblName;
+					$field = $rel["table"];
+					if (isset($rel["field"]))
+						$field = $rel["field"];
+
+					#se for autorelacionamento é preciso compor o own__List
+					#o redbean nao faz sozinho
+					if ($rel["table"] == $this->table){
+						$own = "own". ucfirst($field) . "List";
+						$obj->$own = R::find($this->table,"{$field}_id = ?",[$obj->id]);
+					}
+					
+					$assoc = $obj->fetchAs( $rel["table"] )->$field;
+				}
+			}
+
+			if ($this->oneToOne != false){
+				foreach($this->oneToOne as $rel){
+					#isso só é necessário quando se está
+					#no lado que não tem a chave
+					if ($this->table != $rel["side"]){
+						$tblName = $rel["side"];
+						$obj->$tblName = R::findOne($tblName," {$this->table}_id = ?", [$id]);
+					}
 				}
 			}
 
@@ -135,10 +157,30 @@ class AbstractModel extends CI_Model {
 	}
 
 	//recebe o número da página que será exibida, inicia na 1
-	public function pagination($per_page, $page, $busca = null, $orderBy = null){
+	public function pagination($arr){
 
+		include(APPPATH.'/config/config.php');
+		$busca = null;
+		$orderBy = null;
+		$per_page = $config['per_page'];
+		
+		
+		if (is_string($arr)){
+			$busca = $arr;
+		} else {
+			$busca = val($arr,"busca") || null;
+			$orderBy = val($arr,"orderBy") || null;
+			$per_page = val($arr,"per_page") || null;
+		}
+
+		#página atual
+		if (isset($_GET['page'])){
+			$page = $_GET['page']-1;
+		} else {
+			$page = 0;
+		}
 		//Quantidade de itens por pagina
-		$loc = ($page-1) * $per_page;
+		$loc = $page * $per_page;
 
 		$where = [];
 		$values = [];
@@ -262,14 +304,47 @@ class AbstractModel extends CI_Model {
 		
 		//Recupera a quantidade total de itens na tabela
 		$qtd = R::count($this->table, $joins . $where, $values );
+
+		
+		foreach($list as $key=>$data){
+
+			#em caso de 1 para 1, tem que recuperar os dados manualmente
+			if ($this->oneToOne != false){
+				foreach($this->oneToOne as $rel){
+					#isso só é necessário quando se está
+					#no lado que não tem a chave
+					if ($this->table != $rel["side"]){
+						$tblName = $rel["side"];
+						$list[$key]->$tblName = R::findOne($tblName," {$this->table}_id = ?", [$data->id]);
+					}
+				}
+			}
+
+			#em caso de autorelacionamento, tem que dar o fetchAs
+			if ($this->manyToOne != false){
+				foreach($this->manyToOne as $rel){
+					if ($rel["table"] == $this->table){
+						$field = $rel["table"];
+						if (isset($rel["field"])){
+							$field = $rel["field"];
+						}
+						$assoc = $list[$key]->fetchAs( $this->table )->$field;
+					}
+				}
+			}
+		}
+		
+		
 		
 		//Retorna um array com os dados, total de registros,
 		//qtd de itens por pagina e a quantidade máxima de páginas
 		return ["data"=>$list,"total_rows"=>$qtd, "per_page"=>$per_page, "page_max"=>ceil($qtd/$per_page)];
 	}
 		
-	public function options($field){
-		$all = R::getAll("select id, {$field} from {$this->table}");
+	public function options(){
+		$fields = func_get_args();
+		$fields = implode(",",$fields);
+		$all = R::getAll("select id, $fields from {$this->table}");
 		return [""] + toOptions($all);
 	}
 	
@@ -351,6 +426,49 @@ class AbstractModel extends CI_Model {
 		}
 
 		#verifica se existe relacionamentos
+		if ($this->oneToOne){
+			foreach($this->oneToOne as $rel){
+				if (val($data,$rel["key"]) != ""){
+
+					#em relacionamento 1 para 1, a chave deve ficar sempre de um lado só
+					#o programador escolhe o lado
+					if ($rel["side"] == $this->table){
+						$tblName = $rel["table"];
+						if (val($data,$rel["key"]) != 0){
+
+							#seta todos que estao relacionados com esse para NULL
+							R::exec("UPDATE $this->table set {$tblName}_id = NULL WHERE {$tblName}_id = ?",[$data[$rel["key"]]]);
+
+							#recupera o item da tabela
+							$another = R::load($rel["table"], $data[$rel["key"]]);
+							#relaciona no formato um para um
+							$obj->$tblName = $another;
+						} else {
+							$obj->$tblName = null;
+						}
+					} else {
+						#se eu estiver do outro lado
+						$tblName = $this->table;
+						if (val($data,$rel["key"]) != 0){
+							#recupera o item da tabela do lado correto
+							$another = R::load($rel["side"], $data[$rel["key"]]);
+							#relaciona no formato um para um
+							$another->$tblName = $obj;
+						} else {
+							#apaga o relacionamento
+							$another = R::findOne($rel["side"], "{$this->table}_id = ?", [$obj->id]);
+							$another->$tblName = null;
+						}
+						R::Store($another);
+						
+						
+					}
+					
+				}
+			}
+		}
+
+		
 		if ($this->oneToMany){
 			foreach($this->oneToMany as $rel){
 				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
@@ -370,7 +488,11 @@ class AbstractModel extends CI_Model {
 				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
 					#recupera o item da tabela
 					$another = R::load($rel["table"],$data[$rel["key"]]);
-					$tblName = $rel["table"];
+					if (isset($rel["field"])){
+						$tblName = $rel["field"];
+					} else {
+						$tblName = $rel["table"];
+					}
 					#associa o item
 					$obj->$tblName = $another;
 				}

@@ -39,3 +39,7 @@ a{
     vertical-align: baseline !important;
     margin-right: 3px;
 }
+
+.red {
+    color:red;
+}

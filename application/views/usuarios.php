@@ -52,100 +52,6 @@ if (Seguranca::temPermissao("Admin")): ?>
 </div>
 <?php endif; ?>
 
-<div class="field">
-	<label>Setor
-	<?=form_dropdown("setores_id", $setores, val($dados,"setores_id"));?>
-	<?=error('setores_id')?>
-	</label>
-</div>
-
-<?php if (val($dados,'id') != ""): ?>
-
-<div class="field">
-	<label>Adicionar grupo
-		<?=form_dropdown("grupos_id", $grupos);?>
-	</label>
-</div>
-
-<div class="field">
-<table class="ui celled table">
-	<thead>
-		<tr>
-			<th colspan="3">Grupos do usuário</th>
-		</tr>
-		<tr>
-			<th>Nome</th>
-			<th>Remover grupo</th>
-		</tr>
-	</thead>
-	<tbody>
-	
-<?php
-
-
-foreach($dados->ownGruposusuariosList as $gruposusuarios){
-	
-	$grupo = $gruposusuarios->grupos;
-
-	print "<tr>";
-	
-	print "<td><a href='".site_url()."/grupos/index/{$grupo->id}'> {$grupo->nome} </a></td>";
-
-	#para remover o usuario eu preciso passar a id_usuario
-	#depois a id do registro da tabela gruposusuarios
-	print "<td><a onclick='confirmDelete(\"".site_url()."/usuarios/remover_grupo/{$dados['id']}/{$gruposusuarios->id}\")' > Remover </a></td>";
-	
-	print "</tr>";
-}
-?>
-</tbody>
-</table>
-</div>
-
-
-<?php endif; ?>
-
-<div class="field">
-	<label>Tipo de usuário</label>
-	<div class="six fields">
-		<?php
-		foreach($tiposUsuarios as $key=>$tipo){
-			
-			print "<label class='field'>";
-			print form_radio("tipo",$key, checked($key, $dados,"tipo") );
-			print "$tipo</label>";
-		}
-		?>
-		<?=error('tipo')?>
-	</div>
-</div>
-
-
-<div class="field">
-	<label>Área de atuação</label>
-	<div class="five fields">
-		<input type="hidden" name="area[]">
-		<?php
-		foreach($areasUsuarios as $key=>$tipo){			
-			print "<label class='field'>";
-			print form_checkbox("area[]",$key, checked($key, $dados,"area"));
-			print "$tipo</label>";
-		}
-		?>
-		<?=error('area[]')?>
-	</div>
-</div>
-
-<div class="field">
-	<label>Foto
-		<input type="file" name="foto">
-		<?=error('foto')?>
-	</label>
-	<?php
-	if (val($dados,"foto") != ""){
-		print "<img class='ui tiny circular image' src='".base_url()."uploads/{$dados['foto']}' />";
-	} ?>
-</div>
 
 <div class="field">
 	<button  class="ui blue button" type="submit">Salvar</button>
@@ -171,7 +77,6 @@ foreach($dados->ownGruposusuariosList as $gruposusuarios){
 			<th>Editar</th>
 			<th>Nome</th>
 			<th>E-mail</th>
-			<th>Setor</th>
 			<th>Deletar</th>
 		</tr>
 	</thead>
@@ -192,8 +97,6 @@ foreach($listaPaginada["data"] as $ln){
 	
 	print "<td>{$ln->nome}</td>";
 	print "<td>{$ln->email}</td>";
-	#link para abrir diretamente o setor já em modo de edição
-	@print "<td><a href='".site_url()."/setores/index/{$ln->setores->id}'> {$ln->setores->nome} </a> </td>";
 	
 	print "<td><a onclick='confirmDelete(\"".site_url()."/usuarios/deletar/{$ln->id}$actPage\")'> Deletar </a></td>";
 	

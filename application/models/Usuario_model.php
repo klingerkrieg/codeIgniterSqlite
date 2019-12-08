@@ -2,36 +2,19 @@
 
 class Usuario_model extends AbstractModel {
 
-	#nomes de tabelas, sempre no plural
+	#nomes de tabelas sempre no plural
+	#evite os caracteres _ - ou letras maiusculas
 	public $table = "usuarios";
 
 	#campos nao podem ter - nem espaço
-	public $fields = ["nome","email","senha", "tipo",
-					  "area"=>"array", "foto", "nivel"=>"secure"];
+	#use sempre pascal_case (Sem letras maiusculas)
+	public $fields = ["nome","email", "senha", "nivel"=>"secure"];
 	
-	#campos de busca
-	public $searchFields = ["nome", "email", "tipo", "area", "nivel",
-							"setores_id", "grupos_id"];
 
-
-	#valores
-	public $tiposUsuarios = [1=>"Professor", 2=>"Técnico", 3=>"Bolsista"];
-	public $areasUsuarios = [1=>"Programação", 2=>"Banco de dados",
-							 3=>"Redes", 4=>"Manutenção"];
-	
 	#Seguranca
 	#variável que contem os níveis
 	public $secureLevels = [1=>"Admin", 2=>"Comum", 3=>"Convidado"];
 	
-
-	#varios usuarios podem ter o mesmo setor
-	#a key é o campo no formulario que contem a id do setor
-	public $manyToOne = [["table"=>"setores", 
-						  "key"=>"setores_id"]];
-
-	public $manyToMany = [["table"=>"grupos",
-						   "key"=>"grupos_id", 
-						   "assocTable"=>"gruposusuarios"]];
 	
 
 	public function login($data){
@@ -60,27 +43,12 @@ class Usuario_model extends AbstractModel {
 	}
 	
 
-	public function findNotInSetor($idSetor){
-
-		return R::findAll($this->table,"setores_id <> ? or setores_id is null ",[$idSetor]);			
-	}
-
-	public function findNotInGrupo($idGrupo){
-
-		$sql = "select * from usuarios where 
-				id not in (select usuarios_id from gruposusuarios where grupos_id = ? )";
-		return R::getAll($sql,[$idGrupo]);
-	}
-
 	public function resetAdmin(){
 
 		$email = "admin@admin.com";
 		$senha = "123456";
 
 		#deleta todos os admins
-		$sql = "delete from gruposusuarios
-			where usuarios_id in (select id from usuarios where email = '$email')";
-		R::exec($sql);
 		$sql = "delete from {$this->table} where email = '$email'";
 		R::exec($sql);
 			

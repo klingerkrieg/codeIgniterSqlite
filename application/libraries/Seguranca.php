@@ -6,6 +6,13 @@ class Seguranca {
     private $campo = null;
     private static $desativado = false;
 
+    public static function verificaLogado(){
+        if (!isset($_SESSION["email"])){
+			redirect("login/index/");
+		}
+    }
+
+
     public static function permitir($nivel){
         if (!Seguranca::temPermissao($nivel)){
             $CI =& get_instance();

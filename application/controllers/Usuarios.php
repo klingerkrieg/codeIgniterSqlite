@@ -22,40 +22,16 @@ class Usuarios extends CI_Controller {
 	//página principal
 	public function index($id=null) {
 
-		if (isset($_GET['page'])){
-			$page = $_GET['page'];
-		} else {
-			$page = 1;
-		}
+		#lista paginada
+		$listaPaginada = $this->Usuario_model->pagination(val($_GET,"busca"));
 		
-		//busca todos os registros para a listagem
-		$listaPaginada = $this->Usuario_model->pagination($this->config->item("per_page"), $page, val($_GET,"busca"));
-		
-		//se for para abrir algum registro
-		//se tiver dado erro de validacao, o Model automaticamente pega os
-		//dados que foram enviados via POST
+		#busca o registro que tem aquela id
 		$dados = $this->Usuario_model->get($id);
 
-
-		//recupera todos os setores para o select de setor
-		$this->load->model("Setor_model");
-		$setores = $this->Setor_model->options("nome");
-		$this->load->model("Grupo_model");
-		$grupos = $this->Grupo_model->options("nome");
-
-		//recupera os tipos possiveis de usuarios
-		$tiposUsuarios = $this->Usuario_model->tiposUsuarios;
-		$areasUsuarios = $this->Usuario_model->areasUsuarios;
-		$niveis = [""] + $this->Usuario_model->secureLevels;
+		$niveis = $this->Usuario_model->secureLevels;
 
 		
-		$this->load->view('usuarios', ["listaPaginada"=>$listaPaginada,
-										"dados"=>$dados,
-										"setores"=>$setores,
-										"grupos"=>$grupos,
-										"niveis"=>$niveis,
-										"tiposUsuarios"=>$tiposUsuarios,
-										"areasUsuarios"=>$areasUsuarios]);
+		include view("usuarios");
 		
 	}
 
