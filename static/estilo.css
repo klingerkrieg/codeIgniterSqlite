@@ -43,3 +43,15 @@ a{
 .red {
     color:red;
 }
+
+.tableInput{
+    width:80px !important;
+}
+
+.salvo{
+    background-color: aquamarine !important;
+}
+
+.falha{
+    background-color: orange !important;
+}

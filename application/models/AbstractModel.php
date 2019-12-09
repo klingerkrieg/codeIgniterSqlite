@@ -120,10 +120,11 @@ class AbstractModel extends CI_Model {
 					#o redbean nao faz sozinho
 					if ($rel["table"] == $this->table){
 						$own = "own". ucfirst($field) . "List";
-						$obj->$own = R::find($this->table,"{$field}_id = ?",[$obj->id]);
+						$arr = R::find($this->table,"{$field}_id = ?",[$obj->id]);
+						$obj->$own = $arr;
+					} else {
+						$assoc = $obj->fetchAs( $rel["table"] )->$field;
 					}
-					
-					$assoc = $obj->fetchAs( $rel["table"] )->$field;
 				}
 			}
 
@@ -135,6 +136,40 @@ class AbstractModel extends CI_Model {
 						$tblName = $rel["side"];
 						$obj->$tblName = R::findOne($tblName," {$this->table}_id = ?", [$id]);
 					}
+				}
+			}
+
+
+			if ($this->manyToMany != false){
+				foreach($this->manyToMany as $rel){
+					#isso só é necessário quando em autorelacionamento
+					if ($this->table == $rel["table"]){
+						$field = $rel["field"];#field obrigatório
+						$arr = R::findAll($rel["assocTable"]," {$field}_id = ? or {$this->table}_id = ?", [$id, $id]);
+
+						#busca o restante das informacoes
+						foreach($arr as $ln){
+							$r2 = $ln->fetchAs($this->table)->$field;
+							$tbl = $this->table;
+							$r3 = $ln->fetchAs($this->table)->$tbl;
+						}
+					} else {
+						$tbl1 = $rel["table"];
+						if (isset($rel["field"]))
+							$tbl1 = $rel["field"];
+						$tbl2 = $this->table;
+						$arr = R::findAll($rel["assocTable"]," {$this->table}_id = ?", [$id]);
+						
+						#busca o restante das informacoes
+						foreach($arr as $ln){
+							$r2 = $ln->fetchAs($tbl1)->$tbl1;
+							$r3 = $ln->fetchAs($tbl2)->$tbl2;
+						}
+					}
+
+					#add os dados
+					$own = "own". ucfirst($rel["assocTable"]) ."List";
+					$obj->$own = $arr;
 				}
 			}
 
@@ -168,9 +203,9 @@ class AbstractModel extends CI_Model {
 		if (is_string($arr)){
 			$busca = $arr;
 		} else {
-			$busca = val($arr,"busca") || null;
-			$orderBy = val($arr,"orderBy") || null;
-			$per_page = val($arr,"per_page") || null;
+			$busca = $arr;
+			$orderBy = val($arr,"orderBy", null);
+			$per_page = val($arr,"per_page", null) || $per_page;
 		}
 
 		#página atual
@@ -433,31 +468,34 @@ class AbstractModel extends CI_Model {
 					#em relacionamento 1 para 1, a chave deve ficar sempre de um lado só
 					#o programador escolhe o lado
 					if ($rel["side"] == $this->table){
-						$tblName = $rel["table"];
+						$field = $rel["table"];
+						if (isset($rel["field"]))
+							$field = $rel["field"];
+
 						if (val($data,$rel["key"]) != 0){
 
 							#seta todos que estao relacionados com esse para NULL
-							R::exec("UPDATE $this->table set {$tblName}_id = NULL WHERE {$tblName}_id = ?",[$data[$rel["key"]]]);
+							R::exec("UPDATE $this->table set {$field}_id = NULL WHERE {$field}_id = ?",[$data[$rel["key"]]]);
 
 							#recupera o item da tabela
 							$another = R::load($rel["table"], $data[$rel["key"]]);
 							#relaciona no formato um para um
-							$obj->$tblName = $another;
+							$obj->$field = $another;
 						} else {
-							$obj->$tblName = null;
+							$obj->$field = null;
 						}
 					} else {
 						#se eu estiver do outro lado
-						$tblName = $this->table;
+						$field = $this->table;
 						if (val($data,$rel["key"]) != 0){
 							#recupera o item da tabela do lado correto
 							$another = R::load($rel["side"], $data[$rel["key"]]);
 							#relaciona no formato um para um
-							$another->$tblName = $obj;
+							$another->$field = $obj;
 						} else {
 							#apaga o relacionamento
 							$another = R::findOne($rel["side"], "{$this->table}_id = ?", [$obj->id]);
-							$another->$tblName = null;
+							$another->$field = null;
 						}
 						R::Store($another);
 						
@@ -488,16 +526,16 @@ class AbstractModel extends CI_Model {
 				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
 					#recupera o item da tabela
 					$another = R::load($rel["table"],$data[$rel["key"]]);
-					if (isset($rel["field"])){
+					$tblName = $rel["table"];
+					if (isset($rel["field"]))
 						$tblName = $rel["field"];
-					} else {
-						$tblName = $rel["table"];
-					}
+					
 					#associa o item
 					$obj->$tblName = $another;
 				}
 			}
 		}
+
 
 		if ($this->manyToMany){
 			foreach($this->manyToMany as $rel){
@@ -509,6 +547,8 @@ class AbstractModel extends CI_Model {
 
 					#associa os itens
 					$tbl1 = $rel["table"];
+					if (isset($rel["field"]))
+						$tbl1 = $rel["field"];
 					$tbl2 = $this->table;
 
 					$found = R::find($rel["assocTable"], "{$tbl1}_id = ? and {$tbl2}_id = ?", [$another->id, $obj->id]);

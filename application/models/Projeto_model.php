@@ -14,13 +14,14 @@ class Projeto_model extends AbstractModel {
 		
 		#VÁRIOS projetos podem estar relacionados á VÁRIOS projetos
 		public $manyToMany = [["table"=>"projetos", 
-							  "key"=>"projetos_id",
-							  "assocTable"=>"projrelacionados"]];
+							  "key"=>"relacionado_id",
+							  "assocTable"=>"projrelacionados",
+							  "field"=>"relacionado"]];
 
 
 		
-		public function removeProjetos($id){
-			$obj = R::load("projrelacionados", $id);
+		public function removerProjetos($tab_auxiliar_id){
+			$obj = R::load("projrelacionados", $tab_auxiliar_id);
 			R::Trash($obj);
 		}
 

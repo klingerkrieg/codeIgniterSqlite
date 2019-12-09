@@ -1,8 +1,12 @@
 <?php include 'layout/header.php' ?>
 
+<div class="ui message">
+<p>Aqui você encontrará um <b>autorelacionamento</b> Muios para UM (Disciplinas x Disciplinas), uma disciplina pode ser dependente de outra</p>
+<p>Um exemplo de um relacionamento Muitos para UM (Disciplinas x Professores)</p>
+<p>E um exemplo de radio</p>
+</div>
+
 <div class="ui grid">
-
-
 <form		action="<?=site_url()?>/disciplinas/salvar"
 	class="ui form column stackable grid" 
 	method="post" enctype="multipart/form-data">
@@ -72,14 +76,18 @@ foreach($listagem as $ln){
 </form>
 </div>
 
-
+<div class="ui grid">
 <form class="ui form column stackable grid" action="<?=site_url()?>/usuarios" method="GET">
 	<div class="fields">
-		<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
-		<button  class="ui blue button" type="submit">Pesquisar</button>
+		<div class="twelve wide field">
+			<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
+		</div>
+		<div class="four wide field">
+			<button  class="ui blue button field" type="submit">Pesquisar</button>
+		</div>
 	</div>
 </form>
-
+</div>
 
 
 <?=tableHeader("Disciplinas",

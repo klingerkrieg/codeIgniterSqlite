@@ -22,7 +22,7 @@ function prepare_fields($fields,$post){
 /**
  * Retorna o valor de um array, caso nao exista o valor, retorna em branco
  */
-function val($arr,$key,$subKey=null){
+function val($arr,$key,$subKey=""){
 	
 	if (isset($arr[$key])){
 		if ($subKey != null){
@@ -30,6 +30,12 @@ function val($arr,$key,$subKey=null){
 		}
 		return $arr[$key];
 	} else {
+		if (is_bool($subKey)){
+			return $subKey;
+		} else
+		if ($subKey === null){
+			return null;
+		}
 		return "";
 	}
 	

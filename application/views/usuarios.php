@@ -1,5 +1,11 @@
 <?php include 'layout/header.php' ?>
 
+
+<div class="ui message">
+  <p>Aqui você encontrará o básico para a criação de usuários e permissões.</p>
+</div>
+
+
 <div class="ui grid">
 
 
@@ -58,18 +64,23 @@ if (Seguranca::temPermissao("Admin")): ?>
 	<a class="ui button" href="<?=site_url()?>/usuarios">Novo</a>
 </div>
 
-
 </form>
 </div>
 
 
+<div class="ui grid">
 <form class="ui form column stackable grid" action="<?=site_url()?>/usuarios" method="GET">
 	<div class="fields">
-		<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
-		<button  class="ui blue button" type="submit">Pesquisar</button>
-		<a class="ui button" href="<?=site_url()?>/usuarios/busca">Busca avançada</a>
+		<div class="twelve wide field">
+			<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
+		</div>
+		<div class="four wide field">
+			<button  class="ui blue button field" type="submit">Pesquisar</button>
+		</div>
 	</div>
 </form>
+</div>
+
 
 <table class="ui celled table">
 	<thead>

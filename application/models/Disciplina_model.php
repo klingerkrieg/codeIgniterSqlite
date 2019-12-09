@@ -45,6 +45,24 @@ class Disciplina_model extends AbstractModel {
 			R::Store($obj);
 		}
 
+		public function lancar($idAux, $arr){
+			
+			$obj = R::load("alunosdisciplinas", $idAux);
+
+			if (isset($arr["etapa"]) && isset($arr["nota"]) && is_numeric($arr["nota"])){
+				if ($arr["etapa"] == "nota1"){
+					$obj->nota1 = $arr["nota"];
+				} else 
+				if ($arr["etapa"] == "nota2"){
+					$obj->nota2 = $arr["nota"];
+				}
+				R::Store($obj);
+				return true;
+			}
+
+			return false;
+		}
+
 		
 
 }

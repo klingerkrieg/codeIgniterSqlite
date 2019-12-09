@@ -1,8 +1,14 @@
 <?php include 'layout/header.php' ?>
 
+
+<div class="ui message">
+<p>Aqui você encontrará o relacionamento Muitos para Muitos (Aluno x Disciplinas).</p>
+<p>Como criar matrícula (Uma numeração única).</p>
+<p>Como data de cadastro (Data do sistema).</p>
+</div>
+
+
 <div class="ui grid">
-
-
 <form		action="<?=site_url()?>/alunos/salvar"
 	class="ui form column stackable grid" 
 	method="post" enctype="multipart/form-data">
@@ -16,13 +22,15 @@
 
 <?=input("turma","Turma", $dados)?>
 
+
+<!-- tanto a matrícula como a data de cadastro são criadas no model -->
 <?=input("matricula","Matrícula", $dados, "disabled")?>
 
 <?=input("data_cadastro","Data de cadastro", $dados, "disabled")?>
 
 
 
-
+<!-- Exemplo do Muitos para Muitos -->
 <?php if (val($dados,"id") != ""): ?>
 <div class="field">
 <?=select("disciplinas_id","Matricular", $disciplinas)?>
@@ -53,12 +61,10 @@ foreach($listagem as $tabAuxiliar){
 }
 ?>
 </tbody>
-
 <?=tableBottom($listagem); ?>
-
 </div>
 <?php endif; ?>
-
+<!-- Fim Muitos para Muitos -->
 
 
 
@@ -72,14 +78,18 @@ foreach($listagem as $tabAuxiliar){
 </form>
 </div>
 
-
+<div class="ui grid">
 <form class="ui form column stackable grid" action="<?=site_url()?>/usuarios" method="GET">
 	<div class="fields">
-		<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
-		<button  class="ui blue button" type="submit">Pesquisar</button>
+		<div class="twelve wide field">
+			<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
+		</div>
+		<div class="four wide field">
+			<button  class="ui blue button field" type="submit">Pesquisar</button>
+		</div>
 	</div>
 </form>
-
+</div>
 
 
 <?=tableHeader("Alunos",

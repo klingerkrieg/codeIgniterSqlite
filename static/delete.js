@@ -1,3 +1,11 @@
+$(function(){
+    $('.dropdown').dropdown({
+        clearable: true,
+        placeholder: 'any',
+        on:"hover"
+    });
+});
+
 
 
 function confirmDelete(url){
