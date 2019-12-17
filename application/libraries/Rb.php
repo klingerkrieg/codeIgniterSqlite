@@ -47,16 +47,15 @@ function saveLogs(){
 	$_SESSION["logs"] = $logs;
 }
 
-
  
 class Rb {
      
     function __construct() {
         // Include database configuration
-        include(APPPATH.'/config/database.php');
+		include(APPPATH.'/config/database.php');
+		// Get Redbean
+		include(APPPATH.'/third_party/rb/rb.php');
          
-        // Get Redbean
-        include(APPPATH.'/third_party/rb/rb.php');
          
         // Database data
         $host 	= $db[$active_group]['hostname'];
@@ -88,5 +87,8 @@ class Rb {
 		R::getDatabaseAdapter()->getDatabase()->getLogger()->setMode(1);
 		
         
-    } //end __contruct()
+	} //end __contruct()
+
+
+
 } //end Rb

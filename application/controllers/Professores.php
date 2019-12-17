@@ -39,6 +39,12 @@ class Professores extends CI_Controller {
 
 		#recupera os tipos de vínculo para professor
 		$tiposVinculo = $this->Professor_model->tiposVinculo;
+		$especialidades = $this->Professor_model->especialidades;
+
+		#recupera as disciplinas cadastradas
+		$this->load->model("Disciplina_model");
+		$disciplinas = $this->Disciplina_model->options("nome", "carga_horaria");
+		$optativaArr = $this->Disciplina_model->optativaArr;
 
 		
 		include view('professores');

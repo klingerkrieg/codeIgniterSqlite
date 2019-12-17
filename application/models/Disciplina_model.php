@@ -39,8 +39,8 @@ class Disciplina_model extends AbstractModel {
 
 		public $optativaArr = ["Não","Sim"];
 
-		public function removerRequisito($id_assoc){
-			$obj = R::load($this->table,$id_assoc);
+		public function removerRequisito($id){
+			$obj = R::load($this->table,$id);
 			$obj->requisito = null;
 			R::Store($obj);
 		}

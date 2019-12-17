@@ -67,7 +67,7 @@ class AbstractModel extends CI_Model {
 		if ($this->arrayFields != false){
 			foreach($this->arrayFields as $field){
 				if (isset($obj->$field) && !is_array($obj->$field))
-					$obj->$field = explode(";",$obj->$field);
+					$obj->$field = json_decode($obj->$field);
 			}
 		}
 		return $obj;
@@ -122,9 +122,11 @@ class AbstractModel extends CI_Model {
 						$own = "own". ucfirst($field) . "List";
 						$arr = R::find($this->table,"{$field}_id = ?",[$obj->id]);
 						$obj->$own = $arr;
-					} else {
 						$assoc = $obj->fetchAs( $rel["table"] )->$field;
 					}
+					
+					
+					$assoc = $obj->fetchAs( $rel["table"] )->$field;
 				}
 			}
 
@@ -196,7 +198,7 @@ class AbstractModel extends CI_Model {
 
 		include(APPPATH.'/config/config.php');
 		$busca = null;
-		$orderBy = null;
+		$order_by = null;
 		$per_page = $config['per_page'];
 		
 		
@@ -204,10 +206,12 @@ class AbstractModel extends CI_Model {
 			$busca = $arr;
 		} else {
 			$busca = $arr;
-			$orderBy = val($arr,"orderBy", null);
-			$per_page = val($arr,"per_page", null) || $per_page;
+			$order_by = val($arr,"order_by", null);
+			$per_page = val($arr,"per_page", null);
+			if ($per_page == null)
+				$per_page = $config['per_page'];
 		}
-
+		
 		#página atual
 		if (isset($_GET['page'])){
 			$page = $_GET['page']-1;
@@ -246,7 +250,8 @@ class AbstractModel extends CI_Model {
 							$chk = [];
 							$writer = R::getWriter();
 							foreach($busca[$field] as $v){
-								array_push($chk, "$field like '%;".addslashes ($v).";%'");
+								#array_push($chk, "$field like '%;".addslashes ($v).";%'");
+								array_push($chk, "$field like '%".addslashes ($v)."%'");
 							}
 							$chk = "(" . implode(" or ", $chk) . ")";
 							#gera algo como: (field like '%;1;%' or field like '%;2;%')
@@ -326,15 +331,15 @@ class AbstractModel extends CI_Model {
 		
 		$joins = implode (" ", $joins);
 
-		if ($orderBy == null){
-			$orderBy = $this->decamelize($this->fields[0]);
+		if ($order_by == null){
+			$order_by = $this->decamelize($this->fields[0]);
 		}
 		
 		//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
 		$list = R::findAll($this->table , $joins 
 							. $where 
 							. " ORDER BY " 
-							. $orderBy
+							. $order_by
 							. " LIMIT $loc,$per_page ", $values );
 		
 		//Recupera a quantidade total de itens na tabela
@@ -454,7 +459,16 @@ class AbstractModel extends CI_Model {
 		
 		foreach($fields as $key=>$val){
 			if (is_array($val)){
-				$obj[$key] = implode(";",$val).";";
+				#$obj[$key] = implode(";",$val).";";
+				
+				#remove o input hidden
+				$val2 = [];
+				foreach($val as $k=>$v){
+					if ($v != ""){
+						array_push($val2,$v);
+					}
+				}
+				$obj[$key] = json_encode($val2);
 			} else {
 				$obj[$key] = trim($val);
 			}
@@ -463,7 +477,7 @@ class AbstractModel extends CI_Model {
 		#verifica se existe relacionamentos
 		if ($this->oneToOne){
 			foreach($this->oneToOne as $rel){
-				if (val($data,$rel["key"]) != ""){
+				if (isset($data[$rel["key"]])){
 
 					#em relacionamento 1 para 1, a chave deve ficar sempre de um lado só
 					#o programador escolhe o lado
@@ -472,8 +486,7 @@ class AbstractModel extends CI_Model {
 						if (isset($rel["field"]))
 							$field = $rel["field"];
 
-						if (val($data,$rel["key"]) != 0){
-
+						if ($data[$rel["key"]] != 0){
 							#seta todos que estao relacionados com esse para NULL
 							R::exec("UPDATE $this->table set {$field}_id = NULL WHERE {$field}_id = ?",[$data[$rel["key"]]]);
 
@@ -487,7 +500,7 @@ class AbstractModel extends CI_Model {
 					} else {
 						#se eu estiver do outro lado
 						$field = $this->table;
-						if (val($data,$rel["key"]) != 0){
+						if ($data[$rel["key"]] != 0){
 							#recupera o item da tabela do lado correto
 							$another = R::load($rel["side"], $data[$rel["key"]]);
 							#relaciona no formato um para um
@@ -498,10 +511,7 @@ class AbstractModel extends CI_Model {
 							$another->$field = null;
 						}
 						R::Store($another);
-						
-						
 					}
-					
 				}
 			}
 		}
@@ -509,7 +519,7 @@ class AbstractModel extends CI_Model {
 		
 		if ($this->oneToMany){
 			foreach($this->oneToMany as $rel){
-				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
+				if (isset($data[$rel["key"]]) && $data[$rel["key"]] != 0){
 					#recupera o item da tabela
 					$another = R::load($rel["table"], $data[$rel["key"]]);
 					#para relacionar um para muitos utilize essa notacao
@@ -523,7 +533,7 @@ class AbstractModel extends CI_Model {
 
 		if ($this->manyToOne){
 			foreach($this->manyToOne as $rel){
-				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
+				if (isset($data[$rel["key"]]) && $data[$rel["key"]] != 0){
 					#recupera o item da tabela
 					$another = R::load($rel["table"],$data[$rel["key"]]);
 					$tblName = $rel["table"];
@@ -532,6 +542,13 @@ class AbstractModel extends CI_Model {
 					
 					#associa o item
 					$obj->$tblName = $another;
+				} else 
+				#remove a associação
+				if (isset($data[$rel["key"]]) && $data[$rel["key"]] == 0){
+					$tblName = $rel["table"];
+					if (isset($rel["field"]))
+						$tblName = $rel["field"];
+					$obj->$tblName = null;
 				}
 			}
 		}
@@ -539,7 +556,7 @@ class AbstractModel extends CI_Model {
 
 		if ($this->manyToMany){
 			foreach($this->manyToMany as $rel){
-				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
+				if (isset($data[$rel["key"]]) && $data[$rel["key"]] != 0){
 					#recupera o item da tabela
 					$another = R::load($rel["table"], $data[$rel["key"]]);
 					#cria a tabela de associacao

@@ -60,6 +60,40 @@ if (!function_exists("select")){
     }
 }
 
+
+
+if (!function_exists("checkbox")){
+    function checkbox($name,$label,$values,$data,$size=4,$options=""){
+        global $sizes;
+
+        $required = "";
+        if (strstr($options,"required")){
+            $required = "<span class='red'>*</span>";
+        }
+
+        $size = $sizes[$size];
+
+        $html = "<div class='field'>
+            <label>$label $required</label>
+            <div class='$size fields'>";
+
+        $html .= "<input type='hidden' name='{$name}[]' value=''>";   
+        
+        foreach($values as $key=>$option){
+            $html .= "<label class='field'>";
+            $html .= form_checkbox($name."[]", $key, checked($key, $data, $name) );
+            $html .= "$option</label>";
+        }
+        
+        $html .= "</div>".error($name)."</div>";
+
+
+
+        return $html;
+    }
+}
+
+
 if (!function_exists("radio")){
     function radio($name,$label,$values,$data,$size=4,$options=""){
         global $sizes;

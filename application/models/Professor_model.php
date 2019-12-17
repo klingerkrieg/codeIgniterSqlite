@@ -9,8 +9,9 @@ class Professor_model extends AbstractModel {
 
 		#campos nao podem ter - nem espaço
 		#use sempre pascal_case (Sem letras maiusculas)
-		public $fields = ["nome", "matricula", "vinculo", "foto", "especialidade"];
+		public $fields = ["nome", "matricula", "vinculo", "foto", "especialidades"=>"array"];
 		
+		public $searchFields = ["nome", "matricula", "coordenacoes_id", "disciplinas_id"];
 		
 		#um Professor pode ter várias Disciplinas
 		public $oneToMany = [["table"=>"disciplinas", 

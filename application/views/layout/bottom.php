@@ -39,6 +39,11 @@
   ?>
   <script>
   divDebugger = $("div.debugger");
+  divDebugger.find('p:contains("CREATE TABLE"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
+  divDebugger.find('p:contains("ALTER TABLE"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
+  divDebugger.find('p:contains("DROP TABLE"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
+  divDebugger.find('p:contains("CREATE TEMPORARY"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
+  divDebugger.find('p:contains("CREATE INDEX"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
   divDebugger.find('p:contains("SELECT"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
   divDebugger.find('p:contains("UPDATE"),p:contains("update")').addClass("ui green message").next().addClass("ui green message");
   divDebugger.find('p:contains("INSERT"),p:contains("insert")').addClass("ui green message").next().addClass("ui green message");

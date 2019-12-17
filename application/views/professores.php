@@ -21,13 +21,56 @@
 
 <?=input("matricula","Matrícula", $dados, "disabled")?>
 
-<!-- as opcoes sao definidas no model e o controller as recupera -->
+<!-- as opcoes sao definidas no model e o controller as recupera,
+ o usuário só poderá escolher um -->
 <?=radio("vinculo","Vínculo", $tiposVinculo, $dados, 4, "required")?>
+
+<!-- as opcoes sao definidas no model e o controller as recupera,
+  nesse caso o usuário poderá marcar mais de uma -->
+<?=checkbox("especialidades","Especialidades", $especialidades, $dados, 4)?>
 
 <?=select("coordenacoes_id","Coordenação", $coordenacoes, $dados)?>
 
 <!-- o restante do código do upload encontra-se no controller -->
 <?=upload("foto","Foto","image",$dados,"uploads")?>
+
+
+
+
+
+<!-- Exemplo do UM para Muitos -->
+<?php if (val($dados,"id") != ""): ?>
+<div class="field">
+<?=select("disciplinas_id","Leciona", $disciplinas)?>
+
+<?=tableHeader("Disciplinas que leciona",
+				"Nome",
+				"Optativa",
+				"CH",
+				"Remover")?>
+	
+<?php
+$listagem = $dados->ownDisciplinasList;
+foreach($listagem as $ln){
+
+	print "<tr>";
+	
+	print "<td><a href='".site_url()."/disciplinas/index/{$ln->id}'> {$ln->nome} </a></td>";
+	print "<td>{$optativaArr[$ln->optativa]}</td>";
+	print "<td>{$ln->cargaHoraria} h/a</td>";
+	
+	print "<td><a onclick='confirmDelete(\"".site_url()."/professores/remover_disciplina/{$dados['id']}/{$ln->id}\")' > Remover </a></td>";
+	print "</tr>";
+}
+?>
+</tbody>
+<?=tableBottom($listagem); ?>
+</div>
+<?php endif; ?>
+<!-- Fim UM para Muitos -->
+
+
+
 
 
 <div class="field">
