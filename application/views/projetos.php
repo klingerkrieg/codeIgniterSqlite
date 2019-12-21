@@ -4,10 +4,7 @@
 <p>Aqui você encontrará um <b>autorelacionamento</b> MUITOS para MUITOS (Projetos x Projetos)</p>
 </div>
 
-<div class="ui grid">
-<form		action="<?=site_url()?>/projetos/salvar"
-	class="ui form column stackable grid" 
-	method="post" enctype="multipart/form-data">
+<?=formStart(site_url()."/projetos/salvar");?>
 
 
 <?=flashMessage()?>
@@ -53,29 +50,25 @@ foreach($listagem as $tabAuxiliar){
 
 
 
-<div class="field">
-	<button  class="ui blue button" type="submit">Salvar</button>
-	<a class="ui button" href="<?=site_url()?>/projetos">Novo</a>
-</div>
-</form>
-</div>
+<?php
+$btn1 = button("Salvar");
+$btn2 = button("Novo",["href"=>site_url()."/projetos"]);
+print group($btn1, $btn2);
+?>
 
 
+<?=formEnd()?>
 
-<!-- Formulário para busca -->
-<div class="ui grid">
-<form  action="<?=site_url()?>/usuarios"
-	class="ui form column stackable grid" method="GET">
-	<div class="fields">
-		<div class="twelve wide field">
-			<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
-		</div>
-		<div class="four wide field">
-			<button  class="ui blue button field" type="submit">Pesquisar</button>
-		</div>
-	</div>
-</form>
-</div>
+<?php
+print formStart(site_url()."/projetos", "GET");
+
+	
+	$inp = input("busca","",$_GET,"","Pesquisar");
+	$btn = button("Pesquisar");
+	print group($inp, $btn);
+
+print formEnd();
+?>
 
 
 

@@ -1,5 +1,5 @@
 <?php
-include 'layout/header.php';
+include 'header.php';
 
 print $report;
 

@@ -6,11 +6,7 @@
 <p>E um exemplo de radio</p>
 </div>
 
-<div class="ui grid">
-<form		action="<?=site_url()?>/disciplinas/salvar"
-	class="ui form column stackable grid" 
-	method="post" enctype="multipart/form-data">
-
+<?=formStart(site_url()."/disciplinas/salvar");?>
 
 <?=flashMessage()?>
 
@@ -18,7 +14,7 @@
 
 <?=input("nome","Nome", $dados, "required")?>
 
-<?=radio("optativa","Optativa", $optativaArr, $dados, 2, "required")?>
+<?=radio("optativa","Optativa", $optativaArr, $dados, ["required"])?>
 
 <?=select("carga_horaria","Carga Horária", $opcoesCargaHoraria, $dados, "required")?>
 
@@ -67,27 +63,25 @@ foreach($listagem as $ln){
 
 
 
-<div class="field">
-	<button  class="ui blue button" type="submit">Salvar</button>
-	<a class="ui button" href="<?=site_url()?>/disciplinas">Novo</a>
-</div>
+<?php
+$btn1 = button("Salvar");
+$btn2 = button("Novo",["href"=>site_url()."/disciplinas"]);
+print group($btn1, $btn2);
+?>
 
 
-</form>
-</div>
+<?=formEnd()?>
 
-<div class="ui grid">
-<form class="ui form column stackable grid" action="<?=site_url()?>/usuarios" method="GET">
-	<div class="fields">
-		<div class="twelve wide field">
-			<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
-		</div>
-		<div class="four wide field">
-			<button  class="ui blue button field" type="submit">Pesquisar</button>
-		</div>
-	</div>
-</form>
-</div>
+<?php
+print formStart(site_url()."/disciplinas", "GET");
+
+	
+	$inp = input("busca","",$_GET,"","Pesquisar");
+	$btn = button("Pesquisar");
+	print group($inp, $btn);
+
+print formEnd();
+?>
 
 
 <?=tableHeader("Disciplinas",

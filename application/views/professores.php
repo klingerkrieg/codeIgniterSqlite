@@ -7,10 +7,7 @@
 </div>
 
 
-<div class="ui grid">
-<form		action="<?=site_url()?>/professores/salvar"
-	class="ui form column stackable grid" 
-	method="post" enctype="multipart/form-data">
+<?=formStart(site_url()."/professores/salvar");?>
 
 
 <?=flashMessage()?>
@@ -73,31 +70,26 @@ foreach($listagem as $ln){
 
 
 
-<div class="field">
-	<button  class="ui blue button" type="submit">Salvar</button>
-	<a class="ui button" href="<?=site_url()?>/professores">Novo</a>
-</div>
+<?php
+$btn1 = button("Salvar");
+$btn2 = button("Novo",["href"=>site_url()."/professores"]);
+print group($btn1, $btn2);
+?>
 
 
-</form>
-</div>
+<?=formEnd()?>
 
+<?php
+print formStart(site_url()."/professores", "GET");
 
-<div class="ui grid">
-<form class="ui form column stackable grid" action="<?=site_url()?>/usuarios" method="GET">
-	<div class="fields">
-		<div class="six wide field">
-			<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
-		</div>
-		<div class="four wide field">
-			<button  class="ui blue button field" type="submit">Pesquisar</button>
-		</div>
-		<div class="six wide field">
-			<a class="ui button field " href="<?=site_url()?>/professores/buscaAvancada">Busca avançada</a>
-		</div>
-	</div>
-</form>
-</div>
+	
+	$inp = input("busca","",$_GET,"","Pesquisar");
+	$btn = button("Pesquisar");
+	$btn2 = button("Busca avançada",["href"=>site_url()."/professores/buscaAvancada"]);
+	print group($inp, $btn, $btn2);
+
+print formEnd();
+?>
 
 
 <?=tableHeader("Professores",

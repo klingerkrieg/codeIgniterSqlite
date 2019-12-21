@@ -7,11 +7,7 @@
 <p>Como data de cadastro (Data do sistema).</p>
 </div>
 
-
-<div class="ui grid">
-<form		action="<?=site_url()?>/alunos/salvar"
-	class="ui form column stackable grid" 
-	method="post" enctype="multipart/form-data">
+<?=formStart(site_url()."/alunos/salvar");?>
 
 
 <?=flashMessage()?>
@@ -69,27 +65,25 @@ foreach($listagem as $tabAuxiliar){
 
 
 
-<div class="field">
-	<button  class="ui blue button" type="submit">Salvar</button>
-	<a class="ui button" href="<?=site_url()?>/alunos">Novo</a>
-</div>
+<?php
+$btn1 = button("Salvar");
+$btn2 = button("Novo",["href"=>site_url()."/alunos"]);
+print group($btn1, $btn2);
+?>
 
 
-</form>
-</div>
+<?=formEnd()?>
 
-<div class="ui grid">
-<form class="ui form column stackable grid" action="<?=site_url()?>/usuarios" method="GET">
-	<div class="fields">
-		<div class="twelve wide field">
-			<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
-		</div>
-		<div class="four wide field">
-			<button  class="ui blue button field" type="submit">Pesquisar</button>
-		</div>
-	</div>
-</form>
-</div>
+<?php
+print formStart(site_url()."/alunos", "GET");
+
+	
+	$inp = input("busca","",$_GET,"","Pesquisar");
+	$btn = button("Pesquisar");
+	print group($inp, $btn);
+
+print formEnd();
+?>
 
 
 <?=tableHeader("Alunos",

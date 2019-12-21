@@ -395,20 +395,18 @@ class Testes extends CI_Controller {
 		$this->test($json->id, $coordteste_id, 'logs->coordenacao_id');
 
 		#limpa o banco de dados
-		/*R::exec('SET FOREIGN_KEY_CHECKS = 0;');
-		$listOfTables = R::$writer->getTables();
-		foreach($listOfTables as $table){
-			R::wipe($table);
-		}
-		R::exec('SET FOREIGN_KEY_CHECKS = 1;');*/
 		R::close();
 		unlink($dbname);
 
+
+
 		$report = $this->report();
 
-		$this->load->view("testes",["report"=>$report]);
-		
-		
+		include view('testes/unidade');
+	}
+
+	public function semantic(){
+		include view('testes/semantic');
 	}
 	
 	

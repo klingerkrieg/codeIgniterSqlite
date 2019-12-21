@@ -55,3 +55,8 @@ a{
 .falha{
     background-color: orange !important;
 }
+
+.testeJS{
+    width:16px;
+    float:right;
+}
