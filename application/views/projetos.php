@@ -4,68 +4,64 @@
 <p>Aqui você encontrará um <b>autorelacionamento</b> MUITOS para MUITOS (Projetos x Projetos)</p>
 </div>
 
-<?=formStart(site_url()."/projetos/salvar");?>
+<?=formStart("/projetos/salvar");?>
 
 
 <?=flashMessage()?>
 
-<?=input("id","", $dados, "hidden")?>
+<?=new HTMLInput("id",["hidden","value"=>$dados])?>
 
-<?=input("nome","Nome", $dados, "required")?>
-
-
+<?=new HTMLInput("nome",["label"=>"Nome","required","value"=>$dados])?>
 
 
 <!-- Exemplo do Muitos para Muitos -->
 <?php if (val($dados,"id") != ""): ?>
 <div class="field">
-<?=select("relacionado_id","Relacionar projeto", $projetos)?>
+	<?=new HTMLSelect("relacionado_id",["label"=>"Relacionar projeto","options"=>$projetos])?>
 
-<?=tableHeader("Projetos relacionados",
-				"Nome",
-				"Remover")?>
-	
-<?php
-$listagem = $dados->ownProjrelacionadosList;
-foreach($listagem as $tabAuxiliar){
+	<?=tableHeader("Projetos relacionados",
+					"Nome",
+					"Remover")?>
+		
+	<?php
+	$listagem = $dados->ownProjrelacionadosList;
+	foreach($listagem as $tabAuxiliar){
 
-	$ln = $tabAuxiliar->relacionado;
-	if ($ln->id == $dados["id"]){	
-		$ln = $tabAuxiliar->projetos;
+		$ln = $tabAuxiliar->relacionado;
+		if ($ln->id == $dados["id"]){	
+			$ln = $tabAuxiliar->projetos;
+		}
+
+		print "<tr>";
+		print "<td><a href='".site_url()."/projetos/index/{$ln->id}'> {$ln->nome} </a></td>";
+		print "<td><a onclick='confirmDelete(\"".site_url()."/projetos/remover_relacao/{$dados['id']}/{$tabAuxiliar->id}\")' > Remover </a></td>";
+		print "</tr>";
+
+
 	}
-
-	print "<tr>";
-	print "<td><a href='".site_url()."/projetos/index/{$ln->id}'> {$ln->nome} </a></td>";
-	print "<td><a onclick='confirmDelete(\"".site_url()."/projetos/remover_relacao/{$dados['id']}/{$tabAuxiliar->id}\")' > Remover </a></td>";
-	print "</tr>";
-
-
-}
-?>
-</tbody>
-<?=tableBottom($listagem); ?>
+	?>
+	</tbody>
+	<?=tableBottom($listagem); ?>
 </div>
 <?php endif; ?>
 <!-- Fim Muitos para Muitos -->
 
 
-
 <?php
-$btn1 = button("Salvar");
-$btn2 = button("Novo",["href"=>site_url()."/projetos"]);
-print group($btn1, $btn2);
+$btn1 = new HTMLButton("Salvar");
+$btn2 = new HTMLButton("Novo",["href"=>"/projetos"]);
+print new HTMLGroup($btn1,$btn2);
 ?>
 
 
 <?=formEnd()?>
 
 <?php
-print formStart(site_url()."/projetos", "GET");
+print formStart("/projetos", "GET");
 
-	
-	$inp = input("busca","",$_GET,"","Pesquisar");
-	$btn = button("Pesquisar");
-	print group($inp, $btn);
+	$inp = new HTMLInput("busca",["placeholder"=>"Pesquisar","value"=>$_GET,"size"=>6]);
+	$btn = new HTMLButton("Pesquisar");
+	print new HTMLGroup($inp, $btn);
 
 print formEnd();
 ?>
@@ -74,13 +70,11 @@ print formEnd();
 
 
 <!-- Listagem -->
-<?=tableHeader("Coordenações",
+<?php
+print tableHeader("Coordenações",
 				"Editar",
 				"Nome",
-				"Deletar")?>
-
-<tbody>	
-<?php
+				"Deletar");
 
 $actPage = paginaAtual();
 

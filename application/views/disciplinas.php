@@ -6,54 +6,51 @@
 <p>E um exemplo de radio</p>
 </div>
 
-<?=formStart(site_url()."/disciplinas/salvar");?>
+<?=formStart("/disciplinas/salvar");?>
 
 <?=flashMessage()?>
 
-<?=input("id","", $dados, "hidden")?>
+<?=new HTMLInput("id",["hidden","value"=>$dados])?>
 
-<?=input("nome","Nome", $dados, "required")?>
+<?=new HTMLInput("nome",["label"=>"Nome","required","value"=>$dados])?>
 
-<?=radio("optativa","Optativa", $optativaArr, $dados, ["required"])?>
+<?=new HTMLRadio("optativa",["label"=>"Optativa","options"=>$optativaArr,"required","value"=>$dados])?>
 
-<?=select("carga_horaria","Carga Horária", $opcoesCargaHoraria, $dados, "required")?>
+<?=new HTMLSelect("carga_horaria",["label"=>"Carga Horária","options"=>$opcoesCargaHoraria,"required","value"=>$dados])?>
 
-<?=select("professores_id","Professor", $professores, $dados)?>
+<?=new HTMLSelect("professores_id",["label"=>"Professor","options"=>$professores,"value"=>$dados])?>
 
-<?=select("requisito_id","Pré-requisito", $disciplinas, $dados)?>
-
-
-
+<?=new HTMLSelect("requisito_id",["label"=>"Pré-requisito","options"=>$disciplinas,"value"=>$dados])?>
 
 
 <?php if (val($dados,'id') != ""): ?>
 <div class="field">
-<?=tableHeader("Disciplinas dependentes",
-				"Nome",
-				"Optativa",
-				"CH",
-				"Professor",
-				"Remover")?>
-	
-<?php
-$listagem = $dados->ownRequisitoList;
-foreach($listagem as $ln){
-	
-	print "<tr>";
-	
-	print "<td><a href='".site_url()."/disciplinas/index/{$ln->id}'> {$ln->nome} </a></td>";
-	print "<td>{$optativaArr[$ln->optativa]}</td>";
-	print "<td>{$ln->cargaHoraria} h/a</td>";
-	@print "<td>{$ln->professores->nome}</td>";
-	
-	print "<td><a onclick='confirmDelete(\"".site_url()."/disciplinas/remover_requisito/{$dados['id']}/{$ln->id}\")' > Remover </a></td>";
-	
-	print "</tr>";
-}
-?>
-</tbody>
+	<?=tableHeader("Disciplinas dependentes",
+					"Nome",
+					"Optativa",
+					"CH",
+					"Professor",
+					"Remover")?>
+		
+	<?php
+	$listagem = $dados->ownRequisitoList;
+	foreach($listagem as $ln){
+		
+		print "<tr>";
+		
+		print "<td><a href='".site_url()."/disciplinas/index/{$ln->id}'> {$ln->nome} </a></td>";
+		print "<td>{$optativaArr[$ln->optativa]}</td>";
+		print "<td>{$ln->cargaHoraria} h/a</td>";
+		@print "<td>{$ln->professores->nome}</td>";
+		
+		print "<td><a onclick='confirmDelete(\"".site_url()."/disciplinas/remover_requisito/{$dados['id']}/{$ln->id}\")' > Remover </a></td>";
+		
+		print "</tr>";
+	}
+	?>
+	</tbody>
 
-<?=tableBottom($listagem); ?>
+	<?=tableBottom($listagem); ?>
 
 </div>
 <?php endif; ?>
@@ -64,37 +61,32 @@ foreach($listagem as $ln){
 
 
 <?php
-$btn1 = button("Salvar");
-$btn2 = button("Novo",["href"=>site_url()."/disciplinas"]);
-print group($btn1, $btn2);
+$btn1 = new HTMLButton("Salvar");
+$btn2 = new HTMLButton("Novo",["href"=>"/disciplinas"]);
+print new HTMLGroup($btn1,$btn2);
 ?>
-
 
 <?=formEnd()?>
 
 <?php
-print formStart(site_url()."/disciplinas", "GET");
+print formStart("/disciplinas", "GET");
 
-	
-	$inp = input("busca","",$_GET,"","Pesquisar");
-	$btn = button("Pesquisar");
-	print group($inp, $btn);
+	$inp = new HTMLInput("busca",["placeholder"=>"Pesquisar","value"=>$_GET,"size"=>6]);
+	$btn = new HTMLButton("Pesquisar");
+	print new HTMLGroup($inp, $btn);
 
 print formEnd();
 ?>
 
-
-<?=tableHeader("Disciplinas",
+<?php
+print tableHeader("Disciplinas",
 				"Editar",
 				"Nome",
 				"Optativa",
 				"CH",
 				"Professor",
 				"Pré-requisito",
-				"Deletar")?>
-
-<tbody>	
-<?php
+				"Deletar");
 
 $actPage = paginaAtual();
 

@@ -4,21 +4,21 @@
 <p>Aqui você encontrará um relacionamento Um para UM (Professores x Coordenacoes)</p>
 </div>
 
-<?=formStart(site_url()."/coordenacoes/salvar");?>
+<?=formStart("/coordenacoes/salvar");?>
 
 <?=flashMessage()?>
 
-<?=input("id","", $dados, "hidden")?>
 
-<?=input("nome","Nome", $dados, "required")?>
+<?=new HTMLInput("id",["hidden","value"=>$dados])?>
 
-<?=select("professores_id","Professor", $professores, $dados)?>
+<?=new HTMLInput("nome",["label"=>"Nome","required","value"=>$dados])?>
 
+<?=new HTMLSelect("professores_id",["label"=>"Professor", "options"=>$professores, "value"=>$dados])?>
 
 <?php
-$btn1 = button("Salvar");
-$btn2 = button("Novo",["href"=>site_url()."/coordenacoes"]);
-print group($btn1, $btn2);
+$btn1 = new HTMLButton("Salvar");
+$btn2 = new HTMLButton("Novo",["href"=>"/coordenacoes"]);
+print new HTMLGroup($btn1,$btn2);
 ?>
 
 
@@ -27,26 +27,21 @@ print group($btn1, $btn2);
 
 
 <?php
-print formStart(site_url()."/coordenacoes", "GET");
-
-	
-	$inp = input("busca","",$_GET,"","Pesquisar");
-	$btn = button("Pesquisar");
-	print group($inp, $btn);
-
+print formStart("/coordenacoes", "GET");
+	$inp = new HTMLInput("busca",["placeholder"=>"Pesquisar","value"=>$_GET,"size"=>6]);
+	$btn = new HTMLButton("Pesquisar");
+	print new HTMLGroup($inp, $btn);
 print formEnd();
 ?>
 
 
 
-<?=tableHeader("Coordenações",
+<?php
+print tableHeader("Coordenações",
 				"Editar",
 				"Nome",
 				"Professor",
-				"Deletar")?>
-
-<tbody>	
-<?php
+				"Deletar");
 
 $actPage = paginaAtual();
 

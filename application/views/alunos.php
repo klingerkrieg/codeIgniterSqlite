@@ -7,29 +7,29 @@
 <p>Como data de cadastro (Data do sistema).</p>
 </div>
 
-<?=formStart(site_url()."/alunos/salvar");?>
+<?=formStart("/alunos/salvar");?>
 
 
 <?=flashMessage()?>
 
-<?=input("id","", $dados, "hidden")?>
 
-<?=input("nome","Nome", $dados, "required")?>
+<?=new HTMLInput("id",["hidden","value"=>$dados])?>
 
-<?=input("turma","Turma", $dados)?>
+<?=new HTMLInput("nome",["label"=>"Nome","required","value"=>$dados])?>
 
+<?=new HTMLInput("turma",["label"=>"Turma","value"=>$dados])?>
 
 <!-- tanto a matrícula como a data de cadastro são criadas no model -->
-<?=input("matricula","Matrícula", $dados, "disabled")?>
+<?=new HTMLInput("matricula",["label"=>"Matrícula","value"=>$dados, "disabled"])?>
 
-<?=input("data_cadastro","Data de cadastro", $dados, "disabled")?>
+<?=new HTMLInput("data_cadastro",["label"=>"Data de cadastro","value"=>$dados, "disabled"])?>
 
 
 
 <!-- Exemplo do Muitos para Muitos -->
 <?php if (val($dados,"id") != ""): ?>
 <div class="field">
-<?=select("disciplinas_id","Matricular", $disciplinas)?>
+<?=new HTMLSelect("disciplinas_id",["label"=>"Matricular", "options"=>$disciplinas]);?>
 
 <?=tableHeader("Disciplinas matriculadas",
 				"Nome",
@@ -66,21 +66,20 @@ foreach($listagem as $tabAuxiliar){
 
 
 <?php
-$btn1 = button("Salvar");
-$btn2 = button("Novo",["href"=>site_url()."/alunos"]);
-print group($btn1, $btn2);
+$btn1 = new HTMLButton("Salvar");
+$btn2 = new HTMLButton("Novo",["href"=>"/alunos"]);
+print new HTMLGroup($btn1,$btn2);
 ?>
 
 
 <?=formEnd()?>
 
 <?php
-print formStart(site_url()."/alunos", "GET");
+print formStart("/alunos", "GET");
 
-	
-	$inp = input("busca","",$_GET,"","Pesquisar");
-	$btn = button("Pesquisar");
-	print group($inp, $btn);
+	$inp = new HTMLInput("busca",["placeholder"=>"Pesquisar","value"=>$_GET,"size"=>6]);
+	$btn = new HTMLButton("Pesquisar");
+	print new HTMLGroup($inp, $btn);
 
 print formEnd();
 ?>

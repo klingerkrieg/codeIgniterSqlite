@@ -6,99 +6,59 @@
 </div>
 
 
-<div class="ui grid">
+<?=formStart("/usuarios/salvar");?>
 
 
-<form class="ui form column stackable grid" action="<?=site_url()?>/usuarios/salvar"
-	method="post" enctype="multipart/form-data">
+<?=flashMessage()?>
 
-<?=$this->session->flashdata('error')?>
-<?=$this->session->flashdata('success')?>
-<?=$this->session->flashdata('warning')?>
+<?=new HTMLInput("id",["hidden","value"=>$dados])?>
 
-<input type="hidden" name="id" value="<?=val($dados,'id')?>">
+<?=new HTMLInput("nome",["label"=>"Nome","required","value"=>$dados])?>
 
-<div class="field">
-	<label>Nome
-		<input type="text" name="nome" value="<?=val($dados,'nome')?>">
-		<?=error('nome')?>
-	</label>
-</div>
+<?=new HTMLInput("email",["label"=>"E-mail","required","value"=>$dados])?>
 
+<?=new HTMLInput("senha",["label"=>"Senha","required","type"=>"password"])?>
 
-<div class="field">
-	<label>E-mail
-		<input type="text" name="email" value="<?=val($dados,'email')?>">
-		<?=error('email')?>
-	</label>
-</div>
-
-<div class="field">
-	<label>Senha
-		<input type="password" name="senha" value="">
-		<?=error('senha')?>
-	</label>
-</div>
-
-<div class="field">
-	<label>Confirmação da senha
-		<input type="password" name="senhaConfirm" value="">
-		<?=error('senhaConfirm')?>
-	</label>
-</div>
+<?=new HTMLInput("senhaConfirm",["label"=>"Confirmação da senha","required","type"=>"password"])?>
 
 <?php
 #verifica se tem permissao para escolher o nível do usuário
-if (Seguranca::temPermissao("Admin")): ?>
-<div class="field">
-	<label>Nível de acesso
-		<?=form_dropdown("nivel", $niveis, val($dados,"nivel"));?>
-		<?=error('nivel')?>
-	</label>
-</div>
-<?php endif; ?>
+if (Seguranca::temPermissao("Admin")):
+	print new HTMLSelect("nivel",["label"=>"Nível de acesso", "options"=>$niveis, "value"=>$dados]);
+endif;
+?>
 
 
-<div class="field">
-	<button  class="ui blue button" type="submit">Salvar</button>
-	<a class="ui button" href="<?=site_url()?>/usuarios">Novo</a>
-</div>
-
-</form>
-</div>
-
-
-<div class="ui grid">
-<form class="ui form column stackable grid" action="<?=site_url()?>/usuarios" method="GET">
-	<div class="fields">
-		<div class="twelve wide field">
-			<input name="busca" placeholder="Pesquisar."  value="<?=val($_GET,"busca")?>" />
-		</div>
-		<div class="four wide field">
-			<button  class="ui blue button field" type="submit">Pesquisar</button>
-		</div>
-	</div>
-</form>
-</div>
-
-
-<table class="ui celled table">
-	<thead>
-		<tr>
-			<th>Editar</th>
-			<th>Nome</th>
-			<th>E-mail</th>
-			<th>Deletar</th>
-		</tr>
-	</thead>
-	<tbody>
-	
 <?php
+$btn1 = new HTMLButton("Salvar");
+$btn2 = new HTMLButton("Novo",["href"=>"/usuarios"]);
+print new HTMLGroup($btn1,$btn2);
+?>
 
-$actPage = "";
-if (isset($_GET["page"])){
-	$actPage = "?page={$_GET["page"]}";
-}
+<?=formEnd()?>
+
+
+
+<?php
+print formStart("/usuarios", "GET");
+
+	$inp = new HTMLInput("busca",["placeholder"=>"Pesquisar","value"=>$_GET,"size"=>6]);
+	$btn = new HTMLButton("Pesquisar");
+	$btn2 = new HTMLButton("Busca avançada",["href"=>"/usuarios/buscaAvancada"]);
+	print new HTMLGroup($inp, $btn,$btn2);
+
+print formEnd();
+?>
+
+
+<?php
+print tableHeader("Usuários",
+				"Editar",
+				"Nome",
+				"E-mail",
+				"Deletar");
+
+$actPage = paginaAtual();
 
 foreach($listaPaginada["data"] as $ln){
 	
@@ -114,27 +74,7 @@ foreach($listaPaginada["data"] as $ln){
 	print "</tr>";
 }
 
+print tableBottom($listaPaginada);
 
-#paginacao
-$this->pagination->initialize($listaPaginada);
-?>
-	<tfoot>
-	<tr>
-		<th colspan="5">
-		<span class="ui label">
-			Total: <?=$listaPaginada["total_rows"]?>
-		</span>
-		<?php if ($listaPaginada["page_max"] > 1): ?>
-			<div class="ui right floated pagination menu">
-				<?=$this->pagination->create_links()?>
-			</div>
-		<?php endif; ?>
-		</th>
-	</tr>
-	</tfoot>
-</tbody>
-</table>
-
-<?php
 include 'layout/bottom.php';
 ?>

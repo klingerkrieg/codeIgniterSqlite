@@ -7,61 +7,58 @@
 </div>
 
 
-<?=formStart(site_url()."/professores/salvar");?>
+<?=formStart("/professores/salvar");?>
 
 
 <?=flashMessage()?>
 
-<?=input("id","", $dados, "hidden")?>
 
-<?=input("nome","Nome", $dados, "required")?>
+<?=new HTMLInput("id",["hidden","value"=>$dados])?>
 
-<?=input("matricula","Matrícula", $dados, "disabled")?>
+<?=new HTMLInput("nome",["label"=>"Nome","required","value"=>$dados])?>
+
+<?=new HTMLInput("matricula",["label"=>"Matrícula","value"=>$dados, "disabled"])?>
 
 <!-- as opcoes sao definidas no model e o controller as recupera,
  o usuário só poderá escolher um -->
-<?=radio("vinculo","Vínculo", $tiposVinculo, $dados, 4, "required")?>
+<?=new HTMLRadio("vinculo",["label"=>"Vínculo", "options"=>$tiposVinculo, "value"=>$dados, "required"])?>
 
 <!-- as opcoes sao definidas no model e o controller as recupera,
   nesse caso o usuário poderá marcar mais de uma -->
-<?=checkbox("especialidades","Especialidades", $especialidades, $dados, 4)?>
+<?=new HTMLCheckbox("especialidades",["label"=>"Especialidades", "options"=>$especialidades, "value"=>$dados])?>
 
-<?=select("coordenacoes_id","Coordenação", $coordenacoes, $dados)?>
+<?=new HTMLSelect("coordenacoes_id",["label"=>"Coordenação", "options"=>$coordenacoes, "value"=>$dados])?>
 
 <!-- o restante do código do upload encontra-se no controller -->
-<?=upload("foto","Foto","image",$dados,"uploads")?>
-
-
-
+<?=new HTMLUpload("foto",["label"=>"Foto", "fileType"=>"image", "path"=>"uploads", "value"=>$dados])?>
 
 
 <!-- Exemplo do UM para Muitos -->
 <?php if (val($dados,"id") != ""): ?>
 <div class="field">
-<?=select("disciplinas_id","Leciona", $disciplinas)?>
+	<?=new HTMLSelect("disciplinas_id",["label"=>"Leciona", "options"=>$disciplinas])?>
 
-<?=tableHeader("Disciplinas que leciona",
-				"Nome",
-				"Optativa",
-				"CH",
-				"Remover")?>
-	
-<?php
-$listagem = $dados->ownDisciplinasList;
-foreach($listagem as $ln){
+	<?=tableHeader("Disciplinas que leciona",
+					"Nome",
+					"Optativa",
+					"CH",
+					"Remover");
 
-	print "<tr>";
-	
-	print "<td><a href='".site_url()."/disciplinas/index/{$ln->id}'> {$ln->nome} </a></td>";
-	print "<td>{$optativaArr[$ln->optativa]}</td>";
-	print "<td>{$ln->cargaHoraria} h/a</td>";
-	
-	print "<td><a onclick='confirmDelete(\"".site_url()."/professores/remover_disciplina/{$dados['id']}/{$ln->id}\")' > Remover </a></td>";
-	print "</tr>";
-}
-?>
-</tbody>
-<?=tableBottom($listagem); ?>
+	$listagem = $dados->ownDisciplinasList;
+	foreach($listagem as $ln){
+
+		print "<tr>";
+		
+		print "<td><a href='".site_url()."/disciplinas/index/{$ln->id}'> {$ln->nome} </a></td>";
+		print "<td>{$optativaArr[$ln->optativa]}</td>";
+		print "<td>{$ln->cargaHoraria} h/a</td>";
+		
+		print "<td><a onclick='confirmDelete(\"".site_url()."/professores/remover_disciplina/{$dados['id']}/{$ln->id}\")' > Remover </a></td>";
+		print "</tr>";
+	}
+	?>
+	</tbody>
+	<?=tableBottom($listagem); ?>
 </div>
 <?php endif; ?>
 <!-- Fim UM para Muitos -->
@@ -71,38 +68,35 @@ foreach($listagem as $ln){
 
 
 <?php
-$btn1 = button("Salvar");
-$btn2 = button("Novo",["href"=>site_url()."/professores"]);
-print group($btn1, $btn2);
+$btn1 = new HTMLButton("Salvar");
+$btn2 = new HTMLButton("Novo",["href"=>"/professores"]);
+print new HTMLGroup($btn1,$btn2);
 ?>
 
 
 <?=formEnd()?>
 
 <?php
-print formStart(site_url()."/professores", "GET");
+print formStart("/professores", "GET");
 
-	
-	$inp = input("busca","",$_GET,"","Pesquisar");
-	$btn = button("Pesquisar");
-	$btn2 = button("Busca avançada",["href"=>site_url()."/professores/buscaAvancada"]);
-	print group($inp, $btn, $btn2);
+$inp = new HTMLInput("busca",["placeholder"=>"Pesquisar","value"=>$_GET,"size"=>6]);
+$btn = new HTMLButton("Pesquisar");
+print new HTMLGroup($inp, $btn);
 
 print formEnd();
 ?>
 
 
-<?=tableHeader("Professores",
+<?php
+print tableHeader("Professores",
 				"Editar",
 				"Nome",
 				"Matrícula",
 				"Qtd. de disciplinas",
 				"CH",
 				"Coordenação",
-				"Deletar")?>
-
-<tbody>	
-<?php
+				"Deletar");
+				
 
 $actPage = paginaAtual();
 

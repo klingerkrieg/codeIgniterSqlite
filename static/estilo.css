@@ -60,3 +60,19 @@ a{
     width:16px;
     float:right;
 }
+
+
+/**
+
+Semantic FIX
+
+*/
+
+/*.groupItemSpace{
+    position: relative;
+}
+
+.groupItemSpace div, .groupItemSpace input, .groupItemSpace button{
+    position: absolute;
+    bottom: 4px;
+}*/

@@ -81,7 +81,7 @@ class Usuarios extends CI_Controller {
 		#ou se enviado algo diferente de branco
 		#pq quando ela nao é enviada, significa que nao é pra alterar
 		if (val($_POST,"senha") != "" || val($_POST,"id") == ""){
-			$this->form_validation->set_rules('senha', 'Senha', 'min_length[6]',
+			$this->form_validation->set_rules('senha', 'Senha', 'required|min_length[6]',
 					array('min_length' => 'Defina uma senha com no mínimo 6 dígitos.')
 			);
 			$this->form_validation->set_rules('senhaConfirm', 'Confirmação da senha', 'required|matches[senha]');

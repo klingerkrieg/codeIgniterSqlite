@@ -9,6 +9,7 @@ if (!isset($semantic_sizes)){
 
 
 
+
 if (!function_exists("clearOptions")){
     function clearOptions($options){
         unset($options["required"]);
@@ -79,194 +80,295 @@ if (!function_exists("optionsInterpreter")){
     }
 }
 
-if (!function_exists("input")){
-    /**
-     * $name = Name do campo
-     * $label = Label
-     * $data = [name=>'João']
-     * $options = [placeholder='nome'|hidden|readonly|required|disabled|class|id|size=1-16]
-     */
-    function input($name,$label="",$data=[],$options="text"){
-        $opt = optionsInterpreter($options);
 
-        $placeholder = "";
+
+
+class HTMLElement {
+
+    protected $size;
+    protected $type;
+    protected $disabled;
+    protected $class = "";
+    protected $style;
+    protected $value;
+    
+
+    function __construct($options){
+        global $semantic_sizes;
+
         if (is_array($options)){
-            if (isset($options["placeholder"])){
-                $opt["placeholder"] = $options["placeholder"];
+            if (isset($options["type"])){
+                $this->type = $options["type"];
+            }
+            if (isset($options["disabled"]) || in_array("disabled",$options)){
+                $this->disabled = "disabled";
+            }
+            if (isset($options["size"])){
+                if (isset($semantic_sizes[$options["size"]]))
+                    $this->size = $semantic_sizes[$options["size"]]. " wide";
+                else 
+                    $this->size = $semantic_sizes[8]. " wide";
+            }
+
+        } else {
+            if (strstr($options,"disabled")){
+                $this->disabled = "disabled";
+            }
+        }
+    }
+
+    function attributes(){
+        $attrs = ["type","disabled","class","style","name","id","readOnly","placeholder","value"];
+        $htmlAttributes = [];
+        foreach ($attrs as $attr ){
+            if ( isset($this->$attr) && $this->$attr != null ){
+                array_push($htmlAttributes,"$attr='{$this->$attr}'");
+            }
+        }
+        return implode(" ",$htmlAttributes);
+    }
+
+}
+
+
+
+class HTMLInput extends HTMLElement {
+    
+    protected $name;
+    protected $id;
+    protected $readOnly;
+    protected $required;
+    protected $hidden;
+    protected $label;
+
+    function __construct($name,$options=[]){
+        $this->name = $name;
+        $this->type = "text";
+        parent::__construct($options);
+        
+        if (is_array($options)){
+            if (isset($options["id"])){
+                $this->id = $options["id"];
             }
             if (isset($options["hidden"]) || in_array("hidden",$options)){
-                $hidden = true;
+                $this->type = "hidden";
+                $this->hidden = true;
             }
             if (isset($options["readonly"]) || in_array("readonly",$options)){
-                $opt["readonly"] = "readonly";
+                $this->readOnly = "readonly";
+            }
+            if (isset($options["placeholder"])){
+                $this->placeholder = $options["placeholder"];
+            }
+            if (isset($options["value"]) || in_array("value",$options)){
+                if (is_array($options["value"]) || is_object($options["value"])){
+                    $this->value = val($options["value"], $this->name);
+                } else {
+                    $this->value = $options["value"];
+                }
+            }
+            if (isset($options["label"]) || in_array("label",$options)){
+                $this->label = $options["label"];
+            }
+            if (isset($options["required"]) || in_array("required",$options)){
+                $this->required = "<span class='red'>*</span>";
             }
         } else {
             if (strstr($options,"hidden")){
-                $hidden = true;
+                $this->type = "hidden";
+                $this->hidden = true;
             }
             if (strstr($options,"readonly")){
-                $opt["readonly"] = "readonly";
+                $this->readOnly = "readonly";
+            }
+            if (strstr($options,"required")){
+                $this->required = "<span class='red'>*</span>";
             }
         }
-       
+    }
 
-        if (isset($hidden)){
-            return "<input ".parseToAttributes($opt)."
-                    type='hidden' name='$name' value='" . val($data,$name) . "' >";
+    function writeElement(){
+        return "<input ".$this->attributes()." />";
+    }
+
+    public function __toString(){
+        
+        if ($this->hidden){
+            return $this->writeElement();
         } else {
             
-            $html = "<div class='{$opt['size']} field'> ";
+            $html = "<div class='{$this->size} field'> ";
 
-            $input = "<input ".parseToAttributes($opt)." type='text' 
-                        name='$name' value='" . val($data,$name) ."' {$opt['disabled']} 
-                        {$opt['readonly']} placeholder='{$opt['placeholder']}'>
-                        " . error($name);
+            $input = $this->writeElement();
+            $input .= error($this->name);
 
-            if ($label != "") {
-                $html .= "<label>$label {$opt['required']} $input</label>";
+            if ($this->label != null) {
+                $html .= "<label>{$this->label} {$this->required} $input</label>";
             } else {
                 $html .= $input;
             }
-            
+
             $html .= "</div>";
-
             return $html;
-
         }
-        
     }
 }
 
 
-if (!function_exists("upload")){
-    /**
-     * $name = Name do campo
-     * $label = Label
-     * $type = file/image
-     * $data = [name=>'arquivo.txt']
-     * $path = "./uploads"
-     * $options = [required|disabled|class|id|size=1-16]
-     */
-    function upload($name,$label="",$type="file",$data=[],$path="./uploads",$options=""){
+class HTMLSelect extends HTMLInput {
 
-        $options = optionsInterpreter($options);
+    protected $options = [];
 
-        $html = "<div class='field {$options['disabled']} {$options['size']}'>
-                    <label>$label {$options['required']}
-                        <input ".parseToAttributes($options)." type='file' name='$name'>
-                        ".error('foto')."
-                    </label>";
-
-        if (val($data,$name) != ""){
-            if ($type == "file"){
-                $html .= "<a target='_BLANK' href='".base_url()."$path/{$data[$name]}'>{$data[$name]}</a>";
-            } else
-            if ($type == "image"){
-                $html .= "<img class='ui tiny circular image' src='".base_url()."$path/{$data[$name]}' />";
+    function __construct($name,$options=[]){
+        parent::__construct($name,$options);
+        if (is_array($options)){
+            if (isset($options["options"])){
+                $this->options = $options["options"];
             }
         }
+    }
+
+    function writeElement(){
+        $html = "<select ".$this->attributes().">";
+        foreach($this->options as $k=>$val){
+            $selected = "";
+            if ($this->value == $k){
+                $selected = "selected";
+            }
+            $html .= "<option $selected value='$k'>$val</option>";
+        }
+        $html .= "</select>";
+        return $html;
+    }
+
+}
+
+class HTMLRadio extends HTMLSelect {
+
+    function __construct($name,$options=[]){
+        parent::__construct($name,$options);
+        $this->type = "radio";
+    }
+
+    function writeElement(){
+        $html = "";
         
+        foreach($this->options as $key=>$option){
+            $html .= "<label class='field'>";
+            $checked = "";
+            if ($key === $this->value){
+                $checked = "checked";
+            }
+            $html .= "<input type='$this->type' $checked ".$this->attributes()." />";
+            $html .= "$option</label>";
+        }
         return $html."</div>";
     }
+
+    function __toString(){
+        $html = "<div class='field {$this->disabled}'>
+                    <label>$this->label {$this->required}</label>
+                    <div class='{$this->size} fields'>";
+
+        $html .= $this->writeElement();
+        
+        return $html . "</div>" . error($this->name);
+    }
 }
 
+class HTMLCheckbox extends HTMLRadio {
+    function __construct($name,$options=[]){
+        parent::__construct($name,$options);
+        $this->type = "checkbox";
+    }
+}
 
-if (!function_exists("select")){
-    /**
-     * $name = Name do campo
-     * $label = Label
-     * $values = ["Opção 1", "Opção2"]
-     * $data = [name=>1]
-     * $options = [required|disabled|class|id|size=1-16]
-     */
-    function select($name,$label,$values,$data=[],$options=""){
-        
-        $options = optionsInterpreter($options);
+class HTMLUpload extends HTMLInput {
+    protected $path;
+    protected $fileType;
 
-        $val = $data;
-        if (is_array($data) || is_object($data)){
-            $val = val($data,$name);
-            if ($val == "" && strstr($name,"_id")){
-                list($key1, $key2) = explode("_",$name);
-                $val = val($data, $key1, $key2);
+    function __construct($name,$options=[]){
+        parent::__construct($name,$options);
+        if (is_array($options)){
+            if (isset($options["path"])){
+                $this->options = $options["path"];
+            }
+            if (isset($options["fileType"])){
+                $this->fileType = $options["fileType"];
             }
         }
-        
-        
-        $html = "<div class='field {$options['disabled']} {$options['size']}'>"
-            ."<label>$label {$options['required']}"
-            . form_dropdown($name, $values, $val, parseToAttributes($options))
-            . error($name)
-            . "</label></div>";
+    }
 
+    function writeElement(){
+        $this->type = "file";
+        $html = "<input ".$this->attributes()." />";
+
+        if ($this->value != null){
+            if ($this->fileType == "image"){
+                $html .= "<img class='ui tiny circular image' src='".base_url()."{$this->path}/{$this->value}' />";
+            } else {
+                $html .= "<a target='_BLANK' href='".base_url()."{$this->path}/{$this->value}'>{$this->value}</a>";
+            }
+        }
         return $html;
     }
 }
 
+class HTMLButton extends HTMLElement {
+    protected $text;
+    protected $href;
+    protected $color = "blue";
 
-
-if (!function_exists("checkbox")){
-    /**
-     * $name = Name do campo
-     * $label = Label
-     * $values = ["Opção 1", "Opção2"]
-     * $data = [name=>1]
-     * $size = 1-16
-     * $options = [required|disabled|class|id|size=1-16]
-     */
-    function checkbox($name,$label,$values,$data,$options=""){
-        
-        $options = optionsInterpreter($options);
-
-        $html = "<div class='field {$options['disabled']}'>
-            <label>$label {$options['required']}</label>
-            <div class='{$options['size']} fields'>";
-
-        $html .= "<input type='hidden' name='{$name}[]' value=''>";   
-        
-        foreach($values as $key=>$option){
-            $html .= "<label class='field'>";
-            $html .= form_checkbox($name."[]", $key, checked($key, $data, $name), parseToAttributes($options));
-            $html .= "$option</label>";
+    function __construct($text,$options=[]){
+        $this->text = $text;
+        $this->type = "submit";
+        parent::__construct($options);
+        if (is_array($options)){
+            if (isset($options["href"])){
+                $this->href = $options["href"];
+            }
+            if (isset($options["color"])){
+                $this->color = $options["color"];
+            }
         }
+
+        //Fix href
+        if ($this->href && strstr($this->href,"/")){
+            $this->href = site_url() . $this->href;
+        }
+    }
+
+    public function __toString(){
         
-        $html .= "</div>".error($name)."</div>";
+        $html = "<div class='{$this->size} field'> ";
+        $this->class .= " ui {$this->color} button {$this->disabled}";
 
+        if ($this->href){
+            $html .= "<a ".$this->attributes()." href='{$this->href}' >$this->text</a>";
+        } else {
+            $html .= "<button ".$this->attributes()." >{$this->text}</button>";
+        }
 
-
+        $html .= "</div>";
         return $html;
+        
     }
 }
 
 
-if (!function_exists("radio")){
-    /**
-     * $name = Name do campo
-     * $label = Label
-     * $values = ["Opção 1", "Opção2"]
-     * $data = [name=>1]
-     * $size = 1-16
-     * $options = [required|disabled|class|id|size=1-16]
-     */
-    function radio($name, $label, $values, $data=[], $options=""){
-        
-        $options = optionsInterpreter($options);
+class HTMLGroup{
+    protected $items;
 
-        $html = "<div class='field {$options['disabled']}'>
-            <label>$label {$options['required']}</label>
-            <div class='{$options['size']} fields'>";
-                
-        foreach($values as $key=>$option){
-            $html .= "<label class='field'>";
-            $html .= form_radio($name, $key, checked($key, $data, $name), parseToAttributes($options));
-            $html .= "$option</label>";
+    function __construct(){
+        $this->items = func_get_args();
+    }
+
+    function __toString(){
+        $html = "<div class='fields'>";
+        foreach($this->items as $item){
+            $html .= $item;
         }
-                
-        $html .= "</div>".error($name)."</div>";
-
-
-
-        return $html;
+        return $html."</div>";
     }
 }
 
@@ -339,6 +441,9 @@ if (!function_exists("formStart")){
      * Ao final do formulário use a função formEnd();
      */
     function formStart($action,$method="POST"){
+        if (strstr($action,"/")){
+            $action = site_url().$action;
+        }
         return "<div class='ui grid'>
                 <form		action='$action'
                     class='ui form column stackable grid' 
@@ -349,71 +454,5 @@ if (!function_exists("formStart")){
 if (!function_exists("formEnd")){
     function formEnd(){
         return "</form></div>";
-    }
-}
-
-if (!function_exists("button")){
-    /**
-     * $text = O texto do botão
-     * $options:
-     * size=1-16
-     * type=submit/button
-     * disabled=false/true
-     * color=blue
-     * href=Um link
-     */
-    function button($text, $options=[]){
-        global $semantic_sizes;
-
-        $size = 0;
-        if (isset($options["size"]))
-            $size = $options["size"];
-
-        $type = "submit";
-        if (isset($options["type"]))
-            $type = $options["type"];
-        
-        $disabled = "";
-        if (isset($options["disabled"]))
-            $disabled = "disabled";
-        
-    
-        $color = "blue";
-        if (isset($options["color"]))
-            $color = $options["color"];
-        
-        $href = null;
-        if (isset($options["href"]))
-            $href = $options["href"];
-
-        if ($size != 0)
-            $size = "{$semantic_sizes[$size]} wide";
-
-        if ($href){
-            $html = "<div class='$size field'><a class='ui $color button $disabled' style='width:100%' href='$href' >$text</a></div>";
-        } else {
-            $html = "<div class='$size field'><button  class='ui $color button $disabled' style='width:100%' type='$type' >$text</button></div>";
-        }
-
-        return $html;
-    }
-}
-
-
-
-if (!function_exists("group")){
-    /**
-     * Passe todos os elementos que desejar inserir na mesma linha:
-     * $el1 = button('teste');
-     * $el2 = input('teste');
-     * print group($el1, $el2);
-     */
-    function group(){
-        $items = func_get_args();
-        $html = "<div class='fields'>";
-        foreach($items as $item){
-            $html .= $item;
-        }
-        return $html."</div>";
     }
 }
