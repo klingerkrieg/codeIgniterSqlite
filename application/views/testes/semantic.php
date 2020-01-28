@@ -6,50 +6,54 @@ print "<h3>Testes do semantic_helper</h3>";
 print formStart("#");
 
 print '<h4>Inputs</h4>';
-print input("nome1","Normal",["nome"=>"João"], ["test"=>"[name=nome1]"]);
 
-print input("nome","Desativado",["nome"=>"João"], ["disabled", "test"=>"[name=nome][disabled]"]);
+#Values como Arrays
+print new HTMLInput("nome1",["label"=>"Normal", "value"=>["nome"=>"João"], "attributes"=>['test'=>'[name=nome1]']]);
 
-print input("nome","Requerido",["nome"=>"João"], ["required", "test"=>"requerido"]);
+print new HTMLInput("nome",["label"=>"Desativado", "value"=>["nome"=>"João"],"disabled", "attributes"=>['test'=>'[name=nome][disabled]']]);
 
-print input("readon","Somente leitura",["readon"=>"João"], ["readonly", "test"=>"[name=readon][readonly]"]);
+print new HTMLInput("nome",["label"=>"Requerido", "value"=>["nome"=>"João"],"required", "attributes"=>['test'=>'requerido']]);
 
-print input("reqdes","Requerido e desativado",["reqdes"=>"João"], ["required","disabled","test"=>"requerido[name=reqdes][disabled]"]);
+print new HTMLInput("readon",["label"=>"Somente leitura", "value"=>["readon"=>"João"],"readonly", "attributes"=>['test'=>'[name=readon][readonly]']]);
 
-print select("tipo","Select",["tipo1","tipo2"],["tipo"=>1],["required","id"=>"sel","class"=>"teste", "test"=>"requerido#sel.teste"]);
+print new HTMLInput("reqdes",["label"=>"Requerido e desativado", "value"=>["reqdes"=>"João"],"required", "readonly", "attributes"=>['test'=>'requerido[name=reqdes][disabled]']]);
 
-print checkbox("tipo","Checkbox",["tipo1","tipo2"],["tipo"=>1], ["required","id"=>"chk","class"=>"teste"]);
+print new HTMLSelect("tipo",["label"=>"Select","options"=>["tipo1","tipo2"],"value"=>["tipo"=>1],"required","id"=>"sel","class"=>"teste", "attributes"=>['test'=>'requerido#sel.teste']]);
 
-print radio("tipo","Radio",["tipo1","tipo2"],["tipo"=>1], ["required","id"=>"rad","class"=>"teste"]);
+print new HTMLCheckbox("tipo",["label"=>"Checkbox","options"=>["tipo1","tipo2"],"value"=>["tipo"=>1], "required","id"=>"chk","class"=>"teste"]);
 
+print new HTMLRadio("tipo",["label"=>"Radio","options"=>["tipo1","tipo2"],"value"=>["tipo"=>1], "required","id"=>"rad","class"=>"teste"]);
 
+#Values sem ser array
 print '<h4>Sizes and group</h4>';
-$sel = select("tipo","Select",["tipo1","tipo2"],["tipo"=>1],["size"=>4]);
-$inp = input("nome","Nome",["nome"=>"Maria"],["size"=>4]);
-$inp2 = input("nome","CPF",[],["size"=>4,"class"=>"cpf","id"=>"cpf"]);
-$rad = radio("sexo","Sexo",["m"=>"M","f"=>"F"],["sexo"=>"f"], "required");
-print group($sel, $inp, $inp2, $rad);
+$sel = new HTMLSelect("tipo",["label"=>"Select","options"=>["tipo1","tipo2"],"value"=>1,"size"=>4]);
+$inp = new HTMLInput("nome",["label"=>"Nome","value"=>"Maria","size"=>4]);
+$inp2 = new HTMLInput("nome",["label"=>"CPF","size"=>2,"class"=>"cpf","id"=>"cpf"]);
+$rad = new HTMLRadio("sexo",["label"=>"Sexo","options"=>["m"=>"M","f"=>"F"],"value"=>"f", "required"]);
+print new HTMLGroup($sel, $inp, $inp2, $rad);
 
 
 print '<h4>Upload</h4>';
-print upload("foto","Foto","image",["foto"=>"Capturar_PNG.PNG"],"uploads","required");
+print new HTMLUpload("foto",["label"=>"Foto","fileType"=>"image","value"=>["foto"=>"Capturar_PNG.PNG"],"path"=>"uploads","required"]);
 
-print upload("arquivo","Arquivo","file",["arquivo"=>"teste.rtf"],"uploads","required");
+print new HTMLUpload("arquivo",["label"=>"Arquivo","fileType"=>"file","value"=>"teste.rtf","path"=>"uploads","required"]);
 
-print upload("arquivo","Desativado","file",["arquivo"=>"teste.rtf"],"uploads",["disabled"=>true,"id"=>"id_teste","class"=>"teste"]);
+print new HTMLUpload("arquivo",["label"=>"Desativado","value"=>["arquivo"=>"teste.rtf"],"path"=>"uploads","disabled","id"=>"id_teste","class"=>"teste"]);
 
 print '<h4>Buttons</h4>';
-print button("Tamanho 6",["size"=>6]);
-print button("Link Tamanho 6",["href"=>"./testes","size"=>6,"color"=>"yellow"]);
+print new HTMLButton("Tamanho 6",["size"=>6]);
+print new HTMLButton("Link Tamanho 6",["href"=>"/testes/semantic","size"=>6,"color"=>"yellow"]);
+#ele sempre substitui qualquer aspas duplas por aspas simples nos atributos
+print new HTMLButton("Onclick",["onClick"=>'alert("teste");']);
 
-$btn1 = button("Tam 3 desativado",["size"=>3, "disabled"=>true]);
-$btn2 = button("Link tam 3 desativado",["size"=>3, "href"=>"./testes","disabled"=>true,"color"=>"yellow"]);
-print group($btn1, $btn2);
+$btn1 = new HTMLButton("Tam 3 desativado",["size"=>3, "disabled"=>true]);
+$btn2 = new HTMLButton("Link tam 3 desativado",["size"=>3, "href"=>"/testes/semantic","disabled"=>true,"color"=>"yellow"]);
+print new HTMLGroup($btn1, $btn2);
 
 
-$inp = input("busca","",[],["placeholder"=>"Pesquisar","size"=>6]);
-$btn = button("Pesquisar");
-print group($inp, $btn);
+$inp = new HTMLInput("busca",["placeholder"=>"Pesquisar","size"=>6]);
+$btn = new HTMLButton("Pesquisar");
+print new HTMLGroup($inp, $btn);
 
 print formEnd();
 

@@ -85,24 +85,23 @@ if (!function_exists("optionsInterpreter")){
 
 class HTMLElement {
 
+    protected $id;
+    protected $name;
     protected $size;
     protected $type;
     protected $disabled;
     protected $class = "";
     protected $style;
     protected $value;
-    
+    protected $othersAttributes = [];
+
+    protected $printableAttributes = ["type","disabled","class","style","name","id"];
 
     function __construct($options){
         global $semantic_sizes;
 
         if (is_array($options)){
-            if (isset($options["type"])){
-                $this->type = $options["type"];
-            }
-            if (isset($options["disabled"]) || in_array("disabled",$options)){
-                $this->disabled = "disabled";
-            }
+            $this->getFromOptions(["name","id", "type","class","attributes","disabled"],$options);
             if (isset($options["size"])){
                 if (isset($semantic_sizes[$options["size"]]))
                     $this->size = $semantic_sizes[$options["size"]]. " wide";
@@ -117,15 +116,35 @@ class HTMLElement {
         }
     }
 
-    function attributes(){
-        $attrs = ["type","disabled","class","style","name","id","readOnly","placeholder","value"];
-        $htmlAttributes = [];
-        foreach ($attrs as $attr ){
-            if ( isset($this->$attr) && $this->$attr != null ){
-                array_push($htmlAttributes,"$attr='{$this->$attr}'");
+    function getFromOptions($values, $options){
+        foreach($values as $val){
+            if (isset($options[$val])){
+                $this->$val = $options[$val];
+            } else 
+            if (in_array($val, $options)){
+                $this->$val = true;
             }
         }
+    }
+
+    function attributes(){
+        
+        $htmlAttributes = [];
+        foreach ($this->printableAttributes as $attr ){
+            if ( isset($this->$attr) && $this->$attr != null ){
+                $val = str_replace('"',"'",$this->$attr);
+                array_push($htmlAttributes,"$attr=\"$val\"");
+            }
+        }
+        foreach($this->othersAttributes as $attr=>$val){
+            $val = str_replace('"',"'",$val);
+            array_push($htmlAttributes,"$attr=\"$val\"");
+        }
         return implode(" ",$htmlAttributes);
+    }
+
+    function addAttributes($arr){
+        $this->printableAttributes = array_merge($this->printableAttributes,$arr);
     }
 
 }
@@ -134,7 +153,6 @@ class HTMLElement {
 
 class HTMLInput extends HTMLElement {
     
-    protected $name;
     protected $id;
     protected $readOnly;
     protected $required;
@@ -145,33 +163,29 @@ class HTMLInput extends HTMLElement {
         $this->name = $name;
         $this->type = "text";
         parent::__construct($options);
+
+        $this->addAttributes(["readOnly","placeholder","value"]);
         
         if (is_array($options)){
-            if (isset($options["id"])){
-                $this->id = $options["id"];
+            $this->getFromOptions(["readonly","placeholder","label"],$options);
+            
+            #ifs especiais
+            if (isset($options["required"]) || in_array("required",$options)){
+                $this->required = "<span class='red'>*</span>";
             }
             if (isset($options["hidden"]) || in_array("hidden",$options)){
                 $this->type = "hidden";
                 $this->hidden = true;
             }
-            if (isset($options["readonly"]) || in_array("readonly",$options)){
-                $this->readOnly = "readonly";
-            }
-            if (isset($options["placeholder"])){
-                $this->placeholder = $options["placeholder"];
-            }
-            if (isset($options["value"]) || in_array("value",$options)){
+            if (isset($options["value"])){
                 if (is_array($options["value"]) || is_object($options["value"])){
                     $this->value = val($options["value"], $this->name);
                 } else {
                     $this->value = $options["value"];
                 }
             }
-            if (isset($options["label"]) || in_array("label",$options)){
+            if (isset($options["label"])){
                 $this->label = $options["label"];
-            }
-            if (isset($options["required"]) || in_array("required",$options)){
-                $this->required = "<span class='red'>*</span>";
             }
         } else {
             if (strstr($options,"hidden")){
@@ -290,12 +304,7 @@ class HTMLUpload extends HTMLInput {
     function __construct($name,$options=[]){
         parent::__construct($name,$options);
         if (is_array($options)){
-            if (isset($options["path"])){
-                $this->options = $options["path"];
-            }
-            if (isset($options["fileType"])){
-                $this->fileType = $options["fileType"];
-            }
+            $this->getFromOptions(["path","fileType"],$options);
         }
     }
 
@@ -318,17 +327,21 @@ class HTMLButton extends HTMLElement {
     protected $text;
     protected $href;
     protected $color = "blue";
+    protected $onClick;
 
     function __construct($text,$options=[]){
         $this->text = $text;
         $this->type = "submit";
         parent::__construct($options);
+
+        $this->addAttributes(["href","onClick"]);
+
         if (is_array($options)){
-            if (isset($options["href"])){
-                $this->href = $options["href"];
-            }
-            if (isset($options["color"])){
-                $this->color = $options["color"];
+            $this->getFromOptions(["href","color"],$options);
+            #ifs especiais
+            if (isset($options["onClick"])){
+                $this->type = "button";
+                $this->onClick = $options["onClick"];
             }
         }
 
@@ -344,7 +357,7 @@ class HTMLButton extends HTMLElement {
         $this->class .= " ui {$this->color} button {$this->disabled}";
 
         if ($this->href){
-            $html .= "<a ".$this->attributes()." href='{$this->href}' >$this->text</a>";
+            $html .= "<a ".$this->attributes()." >{$this->text}</a>";
         } else {
             $html .= "<button ".$this->attributes()." >{$this->text}</button>";
         }

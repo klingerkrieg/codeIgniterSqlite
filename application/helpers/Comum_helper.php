@@ -115,21 +115,7 @@ if (!function_exists("cleanString")){
 }
 
 if (!function_exists("checked")){
-    function checked($val, $arr, $field){
-        if (isset($arr[$field])){
-            if ($arr[$field] === "" || $arr[$field] === null){
-                return "";
-            } else
-            if (is_array($arr[$field]) && in_array($val, $arr[$field])){
-                return "checked";
-            } else
-            if ($arr[$field] == $val){
-                return "checked";
-            }
-        } else {
-            return "";
-        }
-    }
+    
 
 
 

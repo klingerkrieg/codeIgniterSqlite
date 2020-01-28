@@ -89,12 +89,6 @@ class Testes extends CI_Controller {
 		$fields = ["nome","data","setores_id"];
 		$post = ["nome"=>"joao","data"=>"19/09/2000", "setores_id"=>1];
 		$this->test(prepare_fields($fields,$post), ["nome"=>"joao","data"=>"19/09/2000", "setores_id"=>1], 'prepare_fields($fields,$post)');
-
-		$arr = ["ativo"=>1];
-		$this->test(checked(1, $arr, "ativo"), 'checked', 'checked($val, $arr, $field)');
-		$this->test(checked(0, $arr, "ativo"), '', 'checked($val, $arr, $field)');
-		$this->test(checked(1, ["linguagens"=>[1,2]], "linguagens"), 'checked', 'checked($val, $arr, $field)');
-		$this->test(checked(3, ["linguagens"=>[1,2]], "linguagens"), '', 'checked($val, $arr, $field)');
 		
 		$arr = [["id"=>1,"nome"=>"joao"],["id"=>2,"nome"=>"maria"],["id"=>3,"nome"=>"ze"]];
 		$resp = [1=>"joao",2=>"maria",3=>"ze"];
