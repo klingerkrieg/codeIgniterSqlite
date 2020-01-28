@@ -18,11 +18,19 @@ print new HTMLInput("readon",["label"=>"Somente leitura", "value"=>["readon"=>"J
 
 print new HTMLInput("reqdes",["label"=>"Readonly e desativado", "value"=>["reqdes"=>"João"],"disabled", "readonly", "attributes"=>['test'=>'[name=reqdes][readonly][disabled]']]);
 
+print new HTMLSelect("sel",["label"=>"Select First not blank","options"=>[1=>"tipo1",2=>"tipo2"], "blank"=>false, "attributes"=>['test'=>"js:$('[name=sel]').val() == 1"]]);
+
 print new HTMLSelect("tipo",["label"=>"Select Tipo 2 selected","options"=>["tipo1","tipo2"],"value"=>["tipo"=>1],"required","id"=>"sel","class"=>"teste", "attributes"=>['test'=>'requerido#sel.teste']]);
 
-print new HTMLCheckbox("chkbox",["label"=>"Checkbox Tipo nada marcado","options"=>["tipo1","tipo2"],"value"=>["chkbox"=>null], "required","id"=>"chk","class"=>"teste", "attributes"=>["test"=>"js:$('[name=chkbox][type=checkbox]').prop('checked') == false"]]);
+print new HTMLCheckbox("chkbox",["label"=>"Checkbox Tipo nada marcado","options"=>["tipo1","tipo2"],"value"=>["chkbox"=>null], "required","id"=>"chk","class"=>"teste", "attributes"=>["test"=>"js:$('[name=chkbox\\\\[\\\\]][type=checkbox]').prop('checked') == false"]]);
+
+print new HTMLCheckbox("chkbox2",["label"=>"Varios marcados","options"=>["tipo1","tipo2","tipo3"],"value"=>["chkbox2"=>[0,2]], "class"=>"chk2", "attributes"=>["test"=>"js:$('.chk2[type=checkbox]').eq(0).prop('checked') == true && $('.chk2[type=checkbox]').eq(1).prop('checked') == false && $('.chk2[type=checkbox]').eq(2).prop('checked') == true"]]);
+
+print new HTMLCheckbox("chkbox3",["label"=>"Checkbox value simples","options"=>["tipo1","tipo2"],"value"=>1, "class"=>"chk3", "attributes"=>["test"=>"js:$('.chk3').eq(0).prop('checked') == false && $('.chk3').eq(1).prop('checked') == true"]]);
 
 print new HTMLRadio("radio",["label"=>"Radio Tipo 1 checked","options"=>["tipo1","tipo2"],"value"=>["radio"=>0], "required","id"=>"rad","class"=>"teste", "attributes"=>["test"=>"js:$('[name=radio][type=radio]').eq(0).prop('checked')"]]);
+
+print new HTMLRadio("radio",["label"=>"Radio nada marcado","options"=>["tipo1","tipo2"],"value"=>[], "id"=>"rad2", "attributes"=>["test"=>"js:$('[name=radio][type=radio]').eq(0).prop('checked')"]]);
 
 #Values sem ser array
 print '<h4>Sizes and group</h4>';

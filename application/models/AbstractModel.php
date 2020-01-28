@@ -51,6 +51,8 @@ class AbstractModel extends CI_Model {
 			$this->arrayFields = false;
 		
 		
+		
+		
 
 		#se tiver campo de seguranca
 		if ($this->secureField != false){
@@ -225,9 +227,26 @@ class AbstractModel extends CI_Model {
 		$values = [];
 		$joins = [];
 
-		#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields
-		$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
-
+		#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields e as keys de todos os relacionamentos
+		if (count($this->searchFields) > 0){
+			$fields = $this->searchFields;
+		} else {
+			$fields = $this->fields;
+			if ($this->manyToMany) foreach($this->manyToMany as $rel){
+				array_push($fields,$rel["key"]);
+			}
+			if ($this->manyToOne) foreach($this->manyToOne as $rel){
+				array_push($fields,$rel["key"]);
+			}
+			if ($this->oneToMany) foreach($this->oneToMany as $rel){
+				array_push($fields,$rel["key"]);
+			}
+			if ($this->oneToOne) foreach($this->oneToOne as $rel){
+				array_push($fields,$rel["key"]);
+			}
+		}
+		
+		#BUSCA AVANCADA
 		if (is_array($busca)){
 
 			foreach($fields as $field ){
@@ -239,9 +258,9 @@ class AbstractModel extends CI_Model {
 					if ($busca[$field] == "0"){
 						continue;
 					}
-
+					
 					# se for campos de checkbox
-					if (is_array($busca[$field])){
+					if (is_array($busca[$field]) && strstr($field,"_id") == false){
 
 						#se estiver entre os campos de array
 						#quer dizer que no banco estará salvo separado por ;
@@ -250,7 +269,6 @@ class AbstractModel extends CI_Model {
 							$chk = [];
 							$writer = R::getWriter();
 							foreach($busca[$field] as $v){
-								#array_push($chk, "$field like '%;".addslashes ($v).";%'");
 								array_push($chk, "$field like '%".addslashes ($v)."%'");
 							}
 							$chk = "(" . implode(" or ", $chk) . ")";
@@ -266,39 +284,95 @@ class AbstractModel extends CI_Model {
 							}
 							$chk = implode(",",$chk);
 							#gera algo como: field IN (1,2)
-							array_push($where, $this->decamelize($field)." IN ($chk)");
+							array_push($where, $this->table.".".$this->decamelize($field)." IN ($chk)");
 						}
 						continue;
 					} else
-					if (trim($busca[$field]) == ""){
+					if (is_string($busca[$field]) && trim($busca[$field]) == ""){
 						continue;
 					}
 
 
 					
+
+					#JOINS
 					$tbl = "";
 					if (strstr($field,"_id")){
+						$nextField = true;
 						#constroi o nome da tabela
 						$tbl = str_replace("_id","",$field);
-						$joinField = "";
+						#IDS
+						$ids = $busca[$field];
+						if (!is_array($ids)){
+							$ids = [$ids];
+						}
+						$ids = implode(", ",$ids);
+						
+
+
 						#procura nos relacionamentos muitos para muitos
-						foreach($this->manyToMany as $rel){
-							
+						if ($this->manyToMany) foreach($this->manyToMany as $rel){
+							#test:Busca *x* (Disc. side)
+							#test:Busca *x* (Aluno side)
 							if ($rel["table"] == $tbl){
-
-								$joinField = $rel["assocTable"].".".$field;
-
 								$joinStr = "inner join {$rel['assocTable']} on "
-										." {$this->table}.id = {$rel['assocTable']}.{$this->table}_id ";
-
-
+										." {$this->table}.id = {$rel['assocTable']}.{$this->table}_id  and "
+										." {$rel['assocTable']}.{$tbl}_id IN ($ids)";
 								array_push($joins, $joinStr);
+								$nextField = false;
+								break;
 							}
 						}
+						if (!$nextField) continue;
+						
+						
+						if ($this->oneToOne) foreach($this->oneToOne as $rel){
+							if ($rel["table"] == $tbl){
+								if ($rel["side"] == $this->table){
+									#test:Busca 1x1 (Coord. side)
+									array_push($where, $this->table.".".$this->decamelize($field)." IN ($ids)");
+								} else {
+									#test:Busca 1x1 (Prof. side)
+									$joinStr = "inner join {$rel['table']} on "
+										." {$this->table}.id = {$rel['table']}.{$this->table}_id and "
+										." {$rel['table']}.id IN($ids) ";
+									array_push($joins, $joinStr);
+								}
+								$nextField = false;
+								break;
+							}
+						}
+						if (!$nextField) continue;
+
+						
+						if ($this->oneToMany) foreach($this->oneToMany as $rel){
+							if ($rel["table"] == $tbl){
+								#test:Busca 1x* (Prof. side)
+								$joinStr = "inner join {$rel['table']} on "
+										." {$this->table}.id = {$rel['table']}.{$this->table}_id and "
+										." {$rel['table']}.id IN($ids) ";
+										
+								array_push($joins, $joinStr);
+								$nextField = false;
+								break;
+							}
+						}
+						if (!$nextField) continue;
+
+
+						if ($this->manyToOne) foreach($this->manyToOne as $rel){
+							if ($rel["table"] == $tbl){
+								#test:Busca *x1 (Disc. side)
+								array_push($where, $this->table.".".$this->decamelize($field)." IN ($ids)");
+								$nextField = false;
+								break;
+							}
+						}
+						if (!$nextField) continue;
 						
 					}
 
-					array_push($where, $this->decamelize($field)." like ?");
+					array_push($where, $this->table.".".$this->decamelize($field)." like ?");
 					array_push($values,"%".$busca[$field]."%");
 				}
 			}
@@ -309,6 +383,7 @@ class AbstractModel extends CI_Model {
 			}
 
 		} else {
+			#BUSCA SIMPLES
 			if ($busca != null){
 				
 				foreach($fields as $field ){
@@ -318,7 +393,7 @@ class AbstractModel extends CI_Model {
 						continue;
 					}
 
-					array_push($where, $this->decamelize($field)." like ?");
+					array_push($where, $this->table.".".$this->decamelize($field)." like ?");
 					array_push($values,"%".$busca."%");
 				}
 			}
@@ -341,6 +416,8 @@ class AbstractModel extends CI_Model {
 							. " ORDER BY " 
 							. $order_by
 							. " LIMIT $loc,$per_page ", $values );
+
+		
 		
 		//Recupera a quantidade total de itens na tabela
 		$qtd = R::count($this->table, $joins . $where, $values );
@@ -385,7 +462,7 @@ class AbstractModel extends CI_Model {
 		$fields = func_get_args();
 		$fields = implode(",",$fields);
 		$all = R::getAll("select id, $fields from {$this->table}");
-		return [""] + toOptions($all);
+		return toOptions($all);
 	}
 	
 	public function all(){

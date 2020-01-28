@@ -157,39 +157,4 @@ class Usuarios extends CI_Controller {
 		$this->Permissao_model->remove_usuario($assoc_id);
 		redirect("usuarios/index/" . $this_id );
 	}
-
-
-	public function busca(){
-		
-		if (isset($_GET['page'])){
-			$page = $_GET['page'];
-		} else {
-			$page = 1;
-		}
-		
-		//busca todos os registros para a listagem
-		$listaPaginada = $this->Usuario_model->pagination($this->config->item("per_page"),
-														  $page,
-														  $_GET);
-		
-
-		//recupera todos os setores para o select de setor
-		$this->load->model("Setor_model");
-		$setores = $this->Setor_model->options("nome");
-		$this->load->model("Grupo_model");
-		$grupos = $this->Grupo_model->options("nome");
-
-		//recupera os tipos possiveis de usuarios
-		$tiposUsuarios = $this->Usuario_model->tiposUsuarios;
-		$areasUsuarios = $this->Usuario_model->areasUsuarios;
-		$niveis = [""] + $this->Usuario_model->secureLevels;
-
-		
-		$this->load->view('busca_usuarios', ["listaPaginada"=>$listaPaginada,
-										"setores"=>$setores,
-										"grupos"=>$grupos,
-										"niveis"=>$niveis,
-										"tiposUsuarios"=>$tiposUsuarios,
-										"areasUsuarios"=>$areasUsuarios]);
-	}
 }

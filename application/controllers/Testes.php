@@ -108,7 +108,7 @@ class Testes extends CI_Controller {
 		
 		$this->load->model("Professor_model");
 		$this->Professor_model->saveLog = false;
-		$fields = [0=>"nome",1=>"matricula",2=>"coordenacoes_id",3=>"disciplinas_id"];
+		$fields = ["nome", "matricula", "vinculo", "especialidades", "coordenacoes_id", "disciplinas_id"];
 		$this->test($this->Professor_model->searchFields, $fields, 'Professor_model->searchFields');
 
 		$arr = [0=>["table"=>"coordenacoes", "key"=>"coordenacoes_id", "side"=>"coordenacoes"]];
@@ -186,9 +186,6 @@ class Testes extends CI_Controller {
 
 		#options
 		$options = $this->Coordenacao_model->options("nome", "professores_id");
-		$key = array_key_first($options);
-		$first = array_shift($options);
-		$this->test($key.$first, "0", 'Coordenacao_model->options (first blank)');
 		$key = array_key_first($options);
 		$first = array_shift($options);
 		$this->test(is_numeric($key), true, 'Coordenacao_model->options (second id)');
@@ -350,9 +347,26 @@ class Testes extends CI_Controller {
 		$this->test(count($proj->ownProjrelacionadosList), 0, 'Rel. proj. x proj. (*x*) [Proj 1 removendo proj]');
 		$this->test(count($proj2->ownProjrelacionadosList), 0, 'Rel. proj. x proj. (*x*) [Proj 2 removendo proj]');
 
+		
+		$this->addSeparator("Buscas");
+		$this->Coordenacao_model->save(["id"=>$coordenacao_id, "professores_id"=>$professor_id]);
+		$pages = $this->Professor_model->pagination(["coordenacoes_id"=>[0, $coordenacao_id]]);
+		$this->test($pages["total_rows"], 1, 'Busca 1x1 (Prof. side)');
+		$pages = $this->Coordenacao_model->pagination(["professores_id"=>[0, $professor_id]]);
+		$this->test($pages["total_rows"], 1, 'Busca 1x1 (Coord. side)');
+		$this->Disciplina_model->save(["id"=>$disciplina_id, "professores_id"=>$professor_id, "alunos_id"=>$aluno_id]);
+		$pages = $this->Professor_model->pagination(["disciplinas_id"=>[0, $disciplina_id]]);
+		$this->test($pages["total_rows"], 1, 'Busca 1x* (Prof. side)');
+		$pages = $this->Disciplina_model->pagination(["professores_id"=>[0, $professor_id]]);
+		$this->test($pages["total_rows"], 1, 'Busca *x1 (Disc. side)');
+		$pages = $this->Disciplina_model->pagination(["alunos_id"=>[0, $aluno_id]]);
+		$this->test($pages["total_rows"], 1, 'Busca *x* (Disc. side)');
+		$pages = $this->Aluno_model->pagination(["disciplinas_id"=>[0, $disciplina_id]]);
+		$this->test($pages["total_rows"], 1, 'Busca *x* (Aluno side)');
+		
+		
 
 		$this->addSeparator("Deletando");
-		$this->Coordenacao_model->save(["id"=>$coordenacao_id, "professores_id"=>$professor_id]);
 		$this->Coordenacao_model->delete($coordenacao_id);
 		$coord = $this->Coordenacao_model->get($coordenacao_id);
 		$this->test($coord, [], 'Coordenacao_model->delete');

@@ -118,23 +118,22 @@ class Professores extends CI_Controller {
 
 	
 	public function buscaAvancada(){
-		
-
 		#busca todos os registros para a listagem
-		$listaPaginada = $this->Usuario_model->pagination($_GET);
+		$listaPaginada = $this->Professor_model->pagination($_GET);
 		
 
 		$this->load->model("Coordenacao_model");
-		$setores = $this->Coordenacao_model->options("nome");
+		$coordenacoes = $this->Coordenacao_model->options("nome");
 
 		$this->load->model("Disciplina_model");
-		$grupos = $this->Disciplina_model->options("nome", "cargaHoraria");
-
+		$disciplinas = $this->Disciplina_model->options("nome");
+		
 
 		#recupera os tipos de vínculo para professor
 		$tiposVinculo = $this->Professor_model->tiposVinculo;
+		$especialidades = $this->Professor_model->especialidades;
 
 		
-		include 'views/busca_professores.php';
+		include view('busca_professores');
 	}
 }

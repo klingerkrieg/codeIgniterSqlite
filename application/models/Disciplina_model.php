@@ -17,7 +17,8 @@ class Disciplina_model extends AbstractModel {
 							  "key"=>"professores_id"],
 							
 							
-		#VÁRIAS disciplinas podem ter UMA disciplina como requisito
+		#VÁRIAS disciplinas podem ter UMA disciplina como requisito 
+		#(busca avançada de autorelacionamento não implementada)
 							  ["table"=>"disciplinas",
 							  "key"=>"requisito_id",
 							  "field"=>"requisito"]

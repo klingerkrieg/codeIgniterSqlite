@@ -11,7 +11,9 @@ class Professor_model extends AbstractModel {
 		#use sempre pascal_case (Sem letras maiusculas)
 		public $fields = ["nome", "matricula", "vinculo", "foto", "especialidades"=>"array"];
 		
-		public $searchFields = ["nome", "matricula", "coordenacoes_id", "disciplinas_id"];
+		#o search fields só é utilizado se você quiser restringir as buscas
+		#ex: o usuário só pode pesquisar em X campos
+		public $searchFields = ["nome", "matricula", "vinculo", "especialidades", "coordenacoes_id", "disciplinas_id"];
 		
 		#um Professor pode ter várias Disciplinas
 		public $oneToMany = [["table"=>"disciplinas", 

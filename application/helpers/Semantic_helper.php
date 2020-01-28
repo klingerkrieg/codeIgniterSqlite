@@ -78,6 +78,12 @@ abstract class HTMLElement {
         $this->printableAttributes = array_merge($this->printableAttributes,$arr);
     }
 
+    function removeAttributes($arr){
+        foreach($arr as $attr){
+            unset($this->printableAttributes[array_search($attr,$this->printableAttributes)]);
+        }
+    }
+
 }
 
 
@@ -116,7 +122,14 @@ class HTMLInput extends HTMLElement {
             }
             if (isset($options["value"])){
                 if (is_array($options["value"]) || is_object($options["value"])){
-                    $this->value = val($options["value"], $this->name);
+                    if (isset($options["value"][$this->name])){
+                        $this->value = $options["value"][$this->name];
+                    } else
+                    if (isset($options["value"][str_replace("_id","",$this->name)])){
+                        #se for uma chave estrangeira
+                        $this->value = $options["value"][str_replace("_id","",$this->name)]['id'];
+                    }
+
                 } else {
                     $this->value = $options["value"];
                 }
@@ -169,14 +182,16 @@ class HTMLInput extends HTMLElement {
 class HTMLSelect extends HTMLInput {
 
     protected $options = [];
+    protected $blank = true;
 
     /**
      * $name = Name do input
-     * $options [id, readonly, required, options, label]
+     * $options [id, readonly, required, options, label, blank=true]
      */
     function __construct($name,$options=[]){
         parent::__construct($name,$options);
         if (is_array($options)){
+            $this->getFromOptions(["blank"],$options);
             if (isset($options["options"])){
                 $this->options = $options["options"];
             }
@@ -184,6 +199,10 @@ class HTMLSelect extends HTMLInput {
     }
 
     function writeElement(){
+        if ($this->blank){
+            $this->options = [""] + $this->options;
+        }
+        
         $html = "<select ".$this->attributes().">";
         foreach($this->options as $k=>$val){
             $selected = "";
@@ -207,18 +226,24 @@ class HTMLRadio extends HTMLSelect {
     function __construct($name,$options=[]){
         parent::__construct($name,$options);
         $this->type = "radio";
+        $this->blank = false;
+        $this->removeAttributes(["value"]);
     }
 
     function writeElement(){
-        $html = "";
-        
+        $html = "";        
         foreach($this->options as $key=>$option){
             $html .= "<label class='field'>";
             $checked = "";
-            if ($key === $this->value){
+            if (is_array($this->value)){
+                if (in_array($key, $this->value)){
+                    $checked = "checked";
+                }
+            } else
+            if (!is_null($this->value) && $key == $this->value){
                 $checked = "checked";
             }
-            $html .= "<input $checked ".$this->attributes()." />";
+            $html .= "<input $checked ".$this->attributes()." value={$key} />";
             $html .= "$option</label>";
         }
         return $html."</div>";
@@ -243,6 +268,23 @@ class HTMLCheckbox extends HTMLRadio {
     function __construct($name,$options=[]){
         parent::__construct($name,$options);
         $this->type = "checkbox";
+        $this->blank = false;
+        if (is_array($options)){
+
+            if (isset($options["value"])){
+                if (is_array($options["value"]) || is_object($options["value"])){
+                    
+                    if (isset($options["value"][$this->name]) && is_array($options["value"][$this->name])){
+                        $this->value = $options["value"][$this->name];
+                    }
+                } else {
+                    $this->value = [$options["value"]];
+                }
+            }
+        }
+        if (strstr($this->name,"[]") == false){
+            $this->name = $this->name."[]";
+        }
     }
 }
 

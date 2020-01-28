@@ -1,7 +1,7 @@
 <?php include 'layout/header.php' ?>
 
 <div class="ui message">
-<p>Aqui você encontrará um <b>autorelacionamento</b> Muios para UM (Disciplinas x Disciplinas), uma disciplina pode ser dependente de outra</p>
+<p>Aqui você encontrará um <b>autorelacionamento</b> Muitos para UM (Disciplinas x Disciplinas), uma disciplina pode ser dependente de outra</p>
 <p>Um exemplo de um relacionamento Muitos para UM (Disciplinas x Professores)</p>
 <p>E um exemplo de radio</p>
 </div>

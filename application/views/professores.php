@@ -9,7 +9,6 @@
 
 <?=formStart("/professores/salvar");?>
 
-
 <?=flashMessage()?>
 
 
@@ -81,7 +80,8 @@ print formStart("/professores", "GET");
 
 $inp = new HTMLInput("busca",["placeholder"=>"Pesquisar","value"=>$_GET,"size"=>6]);
 $btn = new HTMLButton("Pesquisar");
-print new HTMLGroup($inp, $btn);
+$btn2 = new HTMLButton("Busca avançada",["href"=>"/professores/buscaAvancada"]);
+print new HTMLGroup($inp, $btn, $btn2);
 
 print formEnd();
 ?>

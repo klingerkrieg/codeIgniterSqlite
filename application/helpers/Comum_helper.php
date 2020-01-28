@@ -15,6 +15,7 @@ if (!function_exists("convertToPaginate")){
 
 if (!function_exists("view")){
     function view($view){
+        $view = str_ireplace(".php","",$view);
         return "application/views/$view.php";
     }
 }
