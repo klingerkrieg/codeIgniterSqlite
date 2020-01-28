@@ -8,82 +8,7 @@ if (!isset($semantic_sizes)){
 
 
 
-
-
-if (!function_exists("clearOptions")){
-    function clearOptions($options){
-        unset($options["required"]);
-        unset($options["disabled"]);
-        unset($options["readonly"]);
-        unset($options["placeholder"]);
-        $keys = array_keys($options);
-        foreach($keys as $key){
-            if (is_numeric($key) || $options[$key] == ""){
-                unset($options[$key]);
-            }
-        }
-        return $options;
-    }
-}
-
-if (!function_exists("parseToAttributes")){
-    function parseToAttributes($options){
-        $options = clearOptions($options);
-        $attributes = [];
-        foreach ($options as $attr=>$val ){
-            array_push($attributes,"$attr='$val'");
-        }
-        return implode(" ",$attributes);
-    }
-}
-
-
-if (!function_exists("optionsInterpreter")){
-    function optionsInterpreter($options){
-        global $semantic_sizes;
-
-        $opts["placeholder"] = "";
-        $opts["readonly"] = "";
-        $opts["required"] = "";
-        $opts["disabled"] = "";
-        $opts["id"] = "";
-        $opts["size"] = "";
-        $opts["class"] = "";
-
-        if (is_array($options)){
-
-            $opts = array_merge($opts,$options);
-
-            if (isset($options["required"]) || in_array("required",$options)){
-                $opts["required"] = "<span class='red'>*</span>";
-            }
-            if (isset($options["disabled"]) || in_array("disabled",$options)){
-                $opts["disabled"] = "disabled";
-            }
-            if (isset($options["size"])){
-                if (isset($semantic_sizes[$options["size"]]))
-                    $opts["size"] = $semantic_sizes[$options["size"]]. " wide";
-                else 
-                    $opts["size"] = $semantic_sizes[8]. " wide";
-            }
-
-        } else {
-            if (strstr($options,"required")){
-                $opts["required"] = "<span class='red'>*</span>";
-            }
-            if (strstr($options,"disabled")){
-                $opts["disabled"] = "disabled";
-            }
-        }
-
-        return $opts;
-    }
-}
-
-
-
-
-class HTMLElement {
+abstract class HTMLElement {
 
     protected $id;
     protected $name;
@@ -92,7 +17,6 @@ class HTMLElement {
     protected $disabled;
     protected $class = "";
     protected $style;
-    protected $value;
     protected $othersAttributes = [];
 
     protected $printableAttributes = ["type","disabled","class","style","name","id"];
@@ -101,13 +25,20 @@ class HTMLElement {
         global $semantic_sizes;
 
         if (is_array($options)){
-            $this->getFromOptions(["name","id", "type","class","attributes","disabled"],$options);
+            $this->getFromOptions(["name","id", "type","class"],$options);
             if (isset($options["size"])){
                 if (isset($semantic_sizes[$options["size"]]))
                     $this->size = $semantic_sizes[$options["size"]]. " wide";
                 else 
                     $this->size = $semantic_sizes[8]. " wide";
             }
+            if (isset($options["disabled"]) || in_array("disabled", $options, true)){
+                $this->disabled = "disabled";
+            }
+            if (isset($options["attributes"])){
+                $this->othersAttributes = $options["attributes"];
+            }
+            
 
         } else {
             if (strstr($options,"disabled")){
@@ -121,7 +52,7 @@ class HTMLElement {
             if (isset($options[$val])){
                 $this->$val = $options[$val];
             } else 
-            if (in_array($val, $options)){
+            if (in_array($val, $options, true)){
                 $this->$val = true;
             }
         }
@@ -151,6 +82,7 @@ class HTMLElement {
 
 
 
+
 class HTMLInput extends HTMLElement {
     
     protected $id;
@@ -158,22 +90,27 @@ class HTMLInput extends HTMLElement {
     protected $required;
     protected $hidden;
     protected $label;
+    protected $value;
 
+    /**
+     * $name = Name do input
+     * $options [id, readonly, required, hidden, label]
+     */
     function __construct($name,$options=[]){
         $this->name = $name;
         $this->type = "text";
         parent::__construct($options);
 
-        $this->addAttributes(["readOnly","placeholder","value"]);
+        $this->addAttributes(["readonly","placeholder","value"]);
         
         if (is_array($options)){
             $this->getFromOptions(["readonly","placeholder","label"],$options);
             
             #ifs especiais
-            if (isset($options["required"]) || in_array("required",$options)){
+            if (isset($options["required"]) || in_array("required",$options, true)){
                 $this->required = "<span class='red'>*</span>";
             }
-            if (isset($options["hidden"]) || in_array("hidden",$options)){
+            if (isset($options["hidden"]) || in_array("hidden", $options, true)){
                 $this->type = "hidden";
                 $this->hidden = true;
             }
@@ -233,6 +170,10 @@ class HTMLSelect extends HTMLInput {
 
     protected $options = [];
 
+    /**
+     * $name = Name do input
+     * $options [id, readonly, required, options, label]
+     */
     function __construct($name,$options=[]){
         parent::__construct($name,$options);
         if (is_array($options)){
@@ -259,6 +200,10 @@ class HTMLSelect extends HTMLInput {
 
 class HTMLRadio extends HTMLSelect {
 
+    /**
+     * $name = Name do input
+     * $options [id, required, options, label]
+     */
     function __construct($name,$options=[]){
         parent::__construct($name,$options);
         $this->type = "radio";
@@ -273,7 +218,7 @@ class HTMLRadio extends HTMLSelect {
             if ($key === $this->value){
                 $checked = "checked";
             }
-            $html .= "<input type='$this->type' $checked ".$this->attributes()." />";
+            $html .= "<input $checked ".$this->attributes()." />";
             $html .= "$option</label>";
         }
         return $html."</div>";
@@ -291,6 +236,10 @@ class HTMLRadio extends HTMLSelect {
 }
 
 class HTMLCheckbox extends HTMLRadio {
+    /**
+     * $name = Name do input
+     * $options [id, required, options, label]
+     */
     function __construct($name,$options=[]){
         parent::__construct($name,$options);
         $this->type = "checkbox";
@@ -301,6 +250,10 @@ class HTMLUpload extends HTMLInput {
     protected $path;
     protected $fileType;
 
+    /**
+     * $name = Name do input
+     * $options [id, readonly, required, path, fileType, label]
+     */
     function __construct($name,$options=[]){
         parent::__construct($name,$options);
         if (is_array($options)){
@@ -327,21 +280,29 @@ class HTMLButton extends HTMLElement {
     protected $text;
     protected $href;
     protected $color = "blue";
-    protected $onClick;
+    protected $onclick;
 
+    /**
+     * $name = Name do input
+     * $options [id, text, href, color, onclick]
+     */
     function __construct($text,$options=[]){
         $this->text = $text;
         $this->type = "submit";
         parent::__construct($options);
 
-        $this->addAttributes(["href","onClick"]);
+        if ($this->size != null){
+            $this->class .= " buttonFix";
+        }
+
+        $this->addAttributes(["href","onclick"]);
 
         if (is_array($options)){
             $this->getFromOptions(["href","color"],$options);
             #ifs especiais
-            if (isset($options["onClick"])){
+            if (isset($options["onclick"])){
                 $this->type = "button";
-                $this->onClick = $options["onClick"];
+                $this->onclick = $options["onclick"];
             }
         }
 
@@ -372,6 +333,9 @@ class HTMLButton extends HTMLElement {
 class HTMLGroup{
     protected $items;
 
+    /**
+     * $args.. [HTMLElement]
+     */
     function __construct(){
         $this->items = func_get_args();
     }
@@ -406,6 +370,7 @@ if (!function_exists("tableHeader")){
         return $html;
     }
 }
+
 
 
 

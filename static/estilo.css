@@ -68,6 +68,10 @@ Semantic FIX
 
 */
 
+.buttonFix{
+    width:100%;
+}
+
 /*.groupItemSpace{
     position: relative;
 }
