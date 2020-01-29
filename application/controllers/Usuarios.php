@@ -1,16 +1,16 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Usuarios extends CI_Controller { //<----- O nome da classe, 
-	// sempre deve ser igual ao nome do arquivo
+class Usuarios extends CI_Controller { #<----- O nome da classe, 
+	# SEMPRE deve ser igual ao nome do arquivo
 	
 
-	//Construtor da classe
+	#Construtor da classe
 	public function __construct(){
-			parent::__construct(); //Sempre deverá ter essa linha,
-			//para construir aos moldes do CodeIgniter
+			parent::__construct(); #Não pode ser removido
+			#para construir aos moldes do CodeIgniter
 			
-			//Sempre que iniciar essa classe, ele carregará o model de Usuario
+			#Sempre que iniciar essa classe, ele carregará o model de Usuario
 			$this->load->model("Usuario_model");
 	}
 	

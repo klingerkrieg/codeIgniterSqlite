@@ -24,7 +24,7 @@ class Usuario_model extends AbstractModel {
 				#caso a senha venha em branco, nao vai modificar
 				unset($obj["senha"]);
 			}
-			#A função preSave sempre deve retornar o $obj
+			#A função preSave sempre deve retornar o $obj modificado
 			return $obj;
         }
 
