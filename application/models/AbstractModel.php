@@ -196,7 +196,7 @@ class AbstractModel extends CI_Model {
 	}
 
 	//recebe o número da página que será exibida, inicia na 1
-	public function pagination($arr){
+	public function pagination($arr=""){
 
 		include(APPPATH.'/config/config.php');
 		$busca = null;
