@@ -9,6 +9,8 @@ class Usuario_model extends AbstractModel {
 	#campos nao podem ter - nem espaço
 	#use sempre pascal_case (Sem letras maiusculas)
 	public $fields = ["nome","email", "senha", "nivel"=>"secure"];
+
+	public $searchFields = ["nome","email"];
 	
 
 	#Seguranca
@@ -24,8 +26,8 @@ class Usuario_model extends AbstractModel {
 
 	public function preSave($obj, $data) {
 
-		#Caso alguem tente salvar como Admin, seta para a permissao padrao
-		if (($obj["nivel"] == "Admin" || $obj["nivel"] == "") && !Seguranca::temPermissao("Admin")){
+		#Se a pessoa não for Admin, não poderá salvar o nível.
+		if (!Seguranca::temPermissao("Admin")){
 			$obj["nivel"] = 3;
 		}
 

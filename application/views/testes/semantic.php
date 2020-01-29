@@ -14,6 +14,8 @@ print new HTMLInput("nome",["label"=>"Desativado", "value"=>["nome"=>"João"],"d
 
 print new HTMLInput("nome",["label"=>"Requerido", "value"=>["nome"=>"João"],"required", "attributes"=>['test'=>'requerido']]);
 
+print new HTMLInput("user",["id"=>"user", "icon"=>"user", "attributes"=>['test'=>"js:$('#user').prev('i.icon').length"]]);
+
 print new HTMLInput("readon",["label"=>"Somente leitura", "value"=>["readon"=>"João"],"readonly", "attributes"=>['test'=>'[name=readon][readonly]']]);
 
 print new HTMLInput("reqdes",["label"=>"Readonly e desativado", "value"=>["reqdes"=>"João"],"disabled", "readonly", "attributes"=>['test'=>'[name=reqdes][readonly][disabled]']]);
@@ -46,7 +48,7 @@ print new HTMLUpload("foto",["label"=>"Foto","fileType"=>"image","value"=>["foto
 
 print new HTMLUpload("arquivo",["label"=>"Arquivo","fileType"=>"file","value"=>"teste.rtf","path"=>"uploads","required", "attributes"=>['test'=>'[name=arquivo][type=file]']]);
 
-print new HTMLUpload("arquivo2",["label"=>"Desativado","value"=>["arquivo"=>"teste.rtf"],"path"=>"uploads","disabled","id"=>"id_teste","class"=>"teste", "attributes"=>['test'=>'[name=arquivo2][disabled][type=file]']]);
+print new HTMLUpload("arquivo2",["label"=>"Desativado","value"=>["arquivo"=>"teste.rtf"],"path"=>"uploads","disabled", "attributes"=>['test'=>'[name=arquivo2][disabled][type=file]']]);
 
 print '<h4>Buttons</h4>';
 print new HTMLButton("Tamanho 6",["size"=>6, "id"=>"btn6", "attributes"=>['test'=>'.six.wide.field button#btn6.buttonFix.ui.blue.button']]);
@@ -65,6 +67,15 @@ $btn = new HTMLButton("Pesquisar", ["id"=>"pesquisar","attributes"=>['test'=>'.f
 print new HTMLGroup($inp, $btn);
 
 print formEnd();
+
+
+$CI =& get_instance();
+$CI->session->set_flashdata("error","Erro");
+$CI->session->set_flashdata("warning","Alerta");
+$CI->session->set_flashdata("success","Ok");
+$CI->session->set_flashdata("message","Aviso");
+
+print flashMessage();
 
 
 

@@ -51,6 +51,7 @@ class Professores extends CI_Controller {
 		
 	}
 
+
 	
 	public function salvar(){
 
@@ -59,7 +60,7 @@ class Professores extends CI_Controller {
 		$campoDeUpload = "foto";
 		if (isset($_FILES[$campoDeUpload]) && $_FILES[$campoDeUpload]["name"] != ""){
 			#faz o upload com a funcao uploadFile e já retorna o nome do arquivo
-			$_POST[$campoDeUpload] = $this->uploadFile($_FILES, $campoDeUpload, "./uploads/", "jpg|jpeg|png");
+			$_POST[$campoDeUpload] = uploadFile($campoDeUpload, "./uploads/", "jpg|jpeg|png");
 			#caso nao consiga, ele retornará false e a validacao irá falhar
 			$this->form_validation->set_rules($campoDeUpload, 'Foto', 'required', 
 							["required"=>"Verifique o tamanho e o formato do arquivo."]);

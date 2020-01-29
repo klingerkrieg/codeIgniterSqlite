@@ -32,8 +32,8 @@ base_url = '<?=base_url();?>';
   
 
   
-  <!-- Exemplo de menu que só aparece se o usuário tiver permissão de Admin -->
-  <?php if (Seguranca::temPermissao("Admin")) : ?>
+  <!-- Exemplo de menu que só aparece se o usuário tiver permissão de Comum ou superior -->
+  <?php if (Seguranca::temPermissao("Comum")) : ?>
     <a href="<?=site_url()?>/usuarios/" class="item">Usuários</a>
   <?php endif; ?>
 

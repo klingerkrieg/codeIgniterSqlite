@@ -1,5 +1,23 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
+if (!function_exists("checked")){
+    function checked($data, $field, $value){
+        if (isset($data[$field]) && in_array($value,$data[$field])){
+            return "checked";
+        }
+        return "";
+    }
+}
+
+if (!function_exists("selected")){
+    function selected($data, $field, $value){
+        if (isset($data[$field]) && $data[$field] == $value){
+            return "selected";
+        }
+        return "";
+    }
+}
+
 
 if (!function_exists("convertToPaginate")){
     function convertToPaginate($list,$per_page=5){
@@ -61,7 +79,7 @@ if (!function_exists("array_key_first")){
 
 
 if (!function_exists("cleanString")){
-    function uploadFile($UPLOAD, $name, $path, $types, $maxSize = 1000){
+    function uploadFile($name, $path, $types, $maxSize = 1000){
         #local onde salvará o arquivo sqlite/uploads/
         #a pasta uploads deve existir, caso contrário ele não irá funcionar
         $config['upload_path']          = $path;
@@ -77,7 +95,7 @@ if (!function_exists("cleanString")){
             return false;
         } else {
             #retorna como ficou o nome do arquivo no servidor
-            return $this->upload->data()["file_name"];
+            return $CI->upload->data()["file_name"];
         }
     }
 }
@@ -110,11 +128,8 @@ if (!function_exists("cleanString")){
     }
 }
 
-if (!function_exists("checked")){
-    
 
-
-
+if (!function_exists("toOptions")){
     function toOptions($arr){
         $arr2 = [];
         foreach($arr as $val){
@@ -126,7 +141,9 @@ if (!function_exists("checked")){
         }
         return $arr2;
     }
+}
 
+if (!function_exists("error")){
     function error($field){
         if (ENVIRONMENT == "development") {
             if (!isset($_SESSION["erros_apresendados"])){
@@ -138,8 +155,9 @@ if (!function_exists("checked")){
 
         return form_error($field);
     }
+}
 
-
+if (!function_exists("validation_errors_array")){
     function validation_errors_array($prefix = '', $suffix = '') {
         if (FALSE === ($OBJ = & _get_validation_object())) {
         return '';
@@ -147,7 +165,9 @@ if (!function_exists("checked")){
 
         return $OBJ->error_array($prefix, $suffix);
     }
+}
 
+if (!function_exists("errors")){
     function errors(){
         $arr = validation_errors_array();
         if (isset($_SESSION["erros_apresendados"])){
@@ -157,13 +177,14 @@ if (!function_exists("checked")){
         }
         return $arr;
     }
-
+}
+if (!function_exists("clear_errors")){
     function clear_errors(){
         $_SESSION["erros_apresendados"] = [];
         $_SESSION["php_errors"] = [];
     }
-
-
+}
+if (!function_exists("errorManager")){
     function errorManager($errNo, $errStr, $errFile, $errLine, $a){
         if (error_reporting() == 0) {
             return;

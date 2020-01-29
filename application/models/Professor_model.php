@@ -17,13 +17,13 @@ class Professor_model extends AbstractModel {
 		
 		#um Professor pode ter várias Disciplinas
 		public $oneToMany = [["table"=>"disciplinas", 
-							  "key"=>"disciplinas_id"]];
+								"key"=>"disciplinas_id"]];
 
 
 		#UM professor pode ter apenas UMA coordenação e vice versa
 		public $oneToOne = [["table"=>"coordenacoes", 
-							 "key"=>"coordenacoes_id",
-							 "side"=>"coordenacoes"]];
+								"key"=>"coordenacoes_id",
+								"side"=>"coordenacoes"]];
 
 
 		public $tiposVinculo = ["Efetivo", "Substituto", "Visitante"];
@@ -54,7 +54,7 @@ class Professor_model extends AbstractModel {
 
 
 		
-		public function removeDisciplinas($id, $idDisciplina){
+		public function removerDisciplinas($id, $idDisciplina){
 			$obj = R::load($this->table, $id);
 			unset($obj->ownDisciplinasList[$idDisciplina]);
 			R::Store($obj);

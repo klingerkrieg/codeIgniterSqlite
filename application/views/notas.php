@@ -8,7 +8,7 @@
 
 <?php
 // formulario de busca
-print formStart("/usuarios", "GET");
+print formStart("/notas", "GET");
 
 	print flashMessage();
 

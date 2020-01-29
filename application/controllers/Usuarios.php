@@ -15,7 +15,7 @@ class Usuarios extends CI_Controller {
 			redirect("login/index/");
 		}
 
-		$this->seguranca->permitir("Convidado");
+		$this->seguranca->permitir("Comum");
 	}
 	
 	
@@ -35,44 +35,14 @@ class Usuarios extends CI_Controller {
 		
 	}
 
-	public function uploadFile($UPLOAD, $name){
-		#local onde salvará o arquivo sqlite/uploads/
-		#a pasta uploads deve existir, caso contrário ele não irá funcionar
-		$config['upload_path']          = "./uploads/";
-		$config['allowed_types']        = 'jpg|jpeg|png';
-		$config['max_size']             = 1000;
-		#limpa os caracteres especiais do nome do arquivo
-		$config['file_name']            = cleanString($_FILES[$name]["name"]);
-
-		$this->load->library('upload', $config);
-		#faz o upload
-		if ( ! $this->upload->do_upload($name)){
-			return false;
-		} else {
-			#retorna como ficou o nome do arquivo no servidor
-			return $this->upload->data()["file_name"];
-		}
-	}
+	
 
 	
 	public function salvar(){
 
 		#-----------PERMISSAO de SALVAR
-		#So permite usuarios com nivel Comum ou Superior
-		$this->seguranca->permitir("Comum");
-
-
-
-		#UPLOAD de foto com validacao
-		$campoDeUpload = "foto";
-		if (isset($_FILES[$campoDeUpload]) && $_FILES[$campoDeUpload]["name"] != ""){
-			#faz o upload com a funcao uploadFile e já retorna o nome do arquivo
-			$_POST[$campoDeUpload] = $this->uploadFile($_FILES,$campoDeUpload);
-			#caso nao consiga, ele retornará false e a validacao irá falhar
-			$this->form_validation->set_rules($campoDeUpload, 'Foto', 'required', 
-							["required"=>"Verifique o tamanho e o formato do arquivo."]);
-		}
-
+		#So permite usuarios com nivel Admin
+		$this->seguranca->permitir("Admin");
 
 
 
@@ -88,16 +58,7 @@ class Usuarios extends CI_Controller {
 		}
 		$this->form_validation->set_rules('nome', 'Nome', 'required');
 		$this->form_validation->set_rules('email', 'E-mail', 'required|valid_email');
-
-
-
-
-
-		#------------PERMISSAO DE ALTERAR O TIPO DO USUARIO
-		#A permissao só será obrigatória quando a pessoa que estiver cadastrando
-		#tiver o nivel de acesso necessário
-		if (Seguranca::temPermissao("Admin"))
-			$this->form_validation->set_rules('nivel', 'Nível de acesso', 'required');
+		$this->form_validation->set_rules('nivel', 'Nível de acesso', 'required');
 
 		
 
@@ -126,8 +87,8 @@ class Usuarios extends CI_Controller {
 	
 	
 	public function deletar($id){
-		#So permite usuarios com nivel Comum ou Superior
-		$this->seguranca->permitir("Comum");
+		#So permite usuarios com nivel Admin
+		$this->seguranca->permitir("Admin");
 
 		$this->Usuario_model->delete($id);
 		$this->session->set_flashdata("warning","<div class='ui yellow message'>Registro deletado.</div>");
@@ -141,8 +102,8 @@ class Usuarios extends CI_Controller {
 
 
 	public function remover_grupo($this_id, $assoc_id){
-		#So permite usuarios com nivel Comum ou Superior
-		$this->seguranca->permitir("Comum");
+		#So permite usuarios com nivel Admin
+		$this->seguranca->permitir("Admin");
 
 		$this->load->model("Grupo_model");
 		$this->Grupo_model->remove_usuario($assoc_id);
@@ -150,8 +111,8 @@ class Usuarios extends CI_Controller {
 	}
 
 	public function remover_permissao($this_id, $assoc_id){
-		#So permite usuarios com nivel Comum ou Superior
-		$this->seguranca->permitir("Comum");
+		#So permite usuarios com nivel Admin
+		$this->seguranca->permitir("Admin");
 		
 		$this->load->model("Permissao_model");
 		$this->Permissao_model->remove_usuario($assoc_id);

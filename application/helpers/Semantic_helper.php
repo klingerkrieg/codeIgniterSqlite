@@ -92,7 +92,7 @@ abstract class HTMLElement {
 class HTMLInput extends HTMLElement {
     
     protected $id;
-    protected $readOnly;
+    protected $readonly;
     protected $required;
     protected $hidden;
     protected $label;
@@ -142,7 +142,7 @@ class HTMLInput extends HTMLElement {
                 $this->hidden = true;
             }
             if (strstr($options,"readonly")){
-                $this->readOnly = "readonly";
+                $this->readonly = "readonly";
             }
             if (strstr($options,"required")){
                 $this->required = "<span class='red'>*</span>";
@@ -239,7 +239,10 @@ class HTMLRadio extends HTMLSelect {
     }
 
     function writeElement(){
-        $html = "";        
+        $html = "";
+        if ($this->type == "checkbox") {
+            $html .= "<input type='hidden' name='$this->name' value=''>";
+        }
         foreach($this->options as $key=>$option){
             $html .= "<label class='field'>";
             $checked = "";
@@ -298,7 +301,7 @@ class HTMLCheckbox extends HTMLRadio {
 
 class HTMLUpload extends HTMLInput {
     protected $path;
-    protected $fileType;
+    protected $fileType = "file";
 
     /**
      * $name = Name do input
@@ -518,6 +521,11 @@ if (!function_exists("flashMessage")){
             $html .= "<div class='ui yellow message'>". $CI->session->flashdata('warning') . "</div>"; 
         if ($CI->session->flashdata('message'))
             $html .= "<div class='ui message'>". $CI->session->flashdata('message') . "</div>";
+
+        unset($_SESSION['error']);
+        unset($_SESSION['success']);
+        unset($_SESSION['warning']);
+        unset($_SESSION['message']);
         return $html;
     }
 }

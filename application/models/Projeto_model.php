@@ -14,9 +14,9 @@ class Projeto_model extends AbstractModel {
 		
 		#VÁRIOS projetos podem estar relacionados á VÁRIOS projetos
 		public $manyToMany = [["table"=>"projetos", 
-							  "key"=>"relacionado_id",
-							  "assocTable"=>"projrelacionados",
-							  "field"=>"relacionado"]];
+								"key"=>"relacionado_id",
+								"assocTable"=>"projrelacionados",
+								"field"=>"relacionado"]];
 
 
 		
