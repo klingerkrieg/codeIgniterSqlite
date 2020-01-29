@@ -31,12 +31,7 @@ if (!function_exists("paginaAtual")){
 }
 
 
-if (!function_exists("flashMessage")){
-    function flashMessage(){
-        $CI =& get_instance();
-        return $CI->session->flashdata('error') . $CI->session->flashdata('success') . $CI->session->flashdata('warning');
-    }
-}
+
 
 if (!function_exists("redirecionar")){
 	function redirecionar($url){

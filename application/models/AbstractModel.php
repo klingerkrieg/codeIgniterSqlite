@@ -195,7 +195,12 @@ class AbstractModel extends CI_Model {
 		return R::findOne($this->table,$where,$whereData);
 	}
 
-	//recebe o número da página que será exibida, inicia na 1
+	/**
+	 * Passe a string que será buscada ou um array com os campos e os valores a serem buscados
+	 * o array também pode conter:
+	 * 'order_by'=>'nome do campo'
+	 * 'per_page'=>10 (default)
+	 * */
 	public function pagination($arr=""){
 
 		include(APPPATH.'/config/config.php');

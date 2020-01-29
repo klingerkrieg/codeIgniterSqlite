@@ -97,10 +97,11 @@ class HTMLInput extends HTMLElement {
     protected $hidden;
     protected $label;
     protected $value;
+    protected $icon;
 
     /**
      * $name = Name do input
-     * $options [id, readonly, required, hidden, label]
+     * $options [id, readonly, required, hidden, label, icon]
      */
     function __construct($name,$options=[]){
         $this->name = $name;
@@ -110,7 +111,7 @@ class HTMLInput extends HTMLElement {
         $this->addAttributes(["readonly","placeholder","value"]);
         
         if (is_array($options)){
-            $this->getFromOptions(["readonly","placeholder","label"],$options);
+            $this->getFromOptions(["readonly","placeholder","label","icon"],$options);
             
             #ifs especiais
             if (isset($options["required"]) || in_array("required",$options, true)){
@@ -134,9 +135,7 @@ class HTMLInput extends HTMLElement {
                     $this->value = $options["value"];
                 }
             }
-            if (isset($options["label"])){
-                $this->label = $options["label"];
-            }
+            
         } else {
             if (strstr($options,"hidden")){
                 $this->type = "hidden";
@@ -163,14 +162,23 @@ class HTMLInput extends HTMLElement {
             
             $html = "<div class='{$this->size} field'> ";
 
+            if ($this->icon){
+                $html .= "<div class='ui left icon input'>";
+                $html .= "<i class='{$this->icon} icon'></i>";
+            }
+
             $input = $this->writeElement();
-            $input .= error($this->name);
 
             if ($this->label != null) {
                 $html .= "<label>{$this->label} {$this->required} $input</label>";
             } else {
                 $html .= $input;
             }
+
+            if ($this->icon)
+                $html .= "</div>";
+
+            $html .= error($this->name);
 
             $html .= "</div>";
             return $html;
@@ -458,21 +466,58 @@ if (!function_exists("formStart")){
     /**
      * $action=Controller/método que o formulário irá submeter
      * $method=POST/GET
+     * $options=[grid=>true, class=>'']
      * Ao final do formulário use a função formEnd();
      */
-    function formStart($action,$method="POST"){
+    function formStart($action,$method="POST",$options = []){
         if (strstr($action,"/")){
             $action = site_url().$action;
         }
-        return "<div class='ui grid'>
+        $grid = true;
+        $class = "";
+        if (isset($options['grid'])) {
+            $grid = $options['grid'];
+        }
+        if (isset($options['class'])) {
+            $class = $options['class'];
+        }
+
+        $gridClass = "";
+        if ($grid) {
+            $grid = "<div class='ui grid'>";
+            $gridClass = "grid";
+        }
+        return "$grid
                 <form		action='$action'
-                    class='ui form column stackable grid' 
+                    class='ui form column stackable $gridClass $class' 
                     method='$method' enctype='multipart/form-data'>";
     }
 }
 
 if (!function_exists("formEnd")){
-    function formEnd(){
-        return "</form></div>";
+    /**
+     * Grid true imprime um fechamento de div após o form
+     * $grid=true
+     */
+    function formEnd($grid=true){
+        if ($grid)
+            $grid = "</div>";
+        return "</form>$grid";
+    }
+}
+
+if (!function_exists("flashMessage")){
+    function flashMessage(){
+        $CI =& get_instance();
+        $html = "";
+        if ($CI->session->flashdata('error'))
+            $html .= "<div class='ui red message'>". $CI->session->flashdata('error') . "</div>";
+        if ($CI->session->flashdata('success'))
+            $html .= "<div class='ui green message'>". $CI->session->flashdata('success') . "</div>";
+        if ($CI->session->flashdata('warning'))
+            $html .= "<div class='ui yellow message'>". $CI->session->flashdata('warning') . "</div>"; 
+        if ($CI->session->flashdata('message'))
+            $html .= "<div class='ui message'>". $CI->session->flashdata('message') . "</div>";
+        return $html;
     }
 }

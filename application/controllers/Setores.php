@@ -52,16 +52,16 @@ class Setores extends CI_Controller {
 		$this->form_validation->set_rules('nome', 'Nome', 'required');
 
 		if ($this->form_validation->run() == FALSE) {
-			$this->session->set_flashdata("error","<div class='ui red message'>Corrija os erros no formulário.</div>");
+			$this->session->set_flashdata("error","Corrija os erros no formulário.");
 			$this->index();
 		} else {
 			$obj = $this->Setor_model->save();
 
 			#mensagem de confirmação
 			if ($obj == ""){
-				$this->session->set_flashdata("error","<div class='ui red message'>Falha ao salvar.</div>");
+				$this->session->set_flashdata("error","Falha ao salvar.");
 			} else {
-				$this->session->set_flashdata("success","<div class='ui green message'>Salvo com sucesso.</div>");
+				$this->session->set_flashdata("success","Salvo com sucesso.");
 			}
 
 			
@@ -75,7 +75,7 @@ class Setores extends CI_Controller {
 	public function deletar($id){
 		$this->Setor_model->delete($id);
 
-		$this->session->set_flashdata("warning","<div class='ui yellow message'>Registro deletado.</div>");
+		$this->session->set_flashdata("warning","Registro deletado.");
 		
 		redirect("setores/index");
 		

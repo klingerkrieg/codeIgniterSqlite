@@ -50,7 +50,7 @@ class Coordenacoes extends CI_Controller {
 		if ($this->form_validation->run() == FALSE) {
 
 			#se nao estiver
-			$this->session->set_flashdata("error","<div class='ui red message'>O formulário não foi preenchido corretamente.</div>");
+			$this->session->set_flashdata("error","O formulário não foi preenchido corretamente.");
 			$this->index();
 		
 		
@@ -60,9 +60,9 @@ class Coordenacoes extends CI_Controller {
 
 			#mensagem de confirmação
 			if ($id == ""){
-				$this->session->set_flashdata("error","<div class='ui red message'>Falha ao salvar.</div>");
+				$this->session->set_flashdata("error","Falha ao salvar.");
 			} else {
-				$this->session->set_flashdata("success","<div class='ui green message'>Salvo com sucesso.</div>");
+				$this->session->set_flashdata("success","Salvo com sucesso.");
 			}
 
 			redirecionar("coordenacoes/index/" . $id);
@@ -75,7 +75,7 @@ class Coordenacoes extends CI_Controller {
 	public function deletar($id){
 
 		$this->Coordenacao_model->delete($id);
-		$this->session->set_flashdata("warning","<div class='ui yellow message'>Registro deletado.</div>");
+		$this->session->set_flashdata("warning","Registro deletado.");
 
 		redirecionar("coordenacoes/index");
 	}

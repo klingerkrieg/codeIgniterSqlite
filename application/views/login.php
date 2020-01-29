@@ -8,33 +8,20 @@
         Login do sistema
       </div>
     </h2>
-    <form class="ui large form" action="<?=site_url()?>/login/login/" method="POST">
-      <div class="ui stacked segment">
-        <div class="field">
-          <div class="ui left icon input">
-            <i class="user icon"></i>
-            <input type="text" name="email" placeholder="Digite seu e-mail">
-          </div>
-          <?=error('email')?>
-        </div>
-        <div class="field">
-          <div class="ui left icon input">
-            <i class="lock icon"></i>
-            <input type="password" name="senha" placeholder="Digite sua senha">
-          </div>
-          <?=error('senha')?>
-        </div>
-        <button class="ui fluid large teal submit button">Entrar</button>
-      </div>
 
-      <?php if ($this->session->flashdata('message')): ?>
-        <div class="ui red message">
-          <?=$this->session->flashdata('message');?>
-        </div>
-      <?php endif; ?>
+  
+  
+  <?=formStart("/login/login","POST",["grid"=>false])?>
+  
+  <?=flashMessage()?>
 
+  <?=new HTMLInput("email",["icon"=>"user","placeholder"=>"Digite seu e-mail"])?>
 
-    </form>
+  <?=new HTMLInput("senha",["icon"=>"lock","type"=>"password","placeholder"=>"Digite sua senha"])?>
+
+  <?=new HTMLButton("Entrar",["class"=>"fluid large", "color"=>"teal"])?>
+
+  <?=formEnd(false)?>
 
     <div class="ui message">
       Novo usuário? <a href="<?=site_url()?>/login/cria_usuario/">Cadastre-se</a>

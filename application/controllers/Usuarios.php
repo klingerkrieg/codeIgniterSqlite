@@ -105,7 +105,7 @@ class Usuarios extends CI_Controller {
 
 
 		if ($this->form_validation->run() == FALSE) {
-			$this->session->set_flashdata("error","<div class='ui red message'>Corrija os erros no formulário.</div>");
+			$this->session->set_flashdata("error","Corrija os erros no formulário.");
 			$this->index();
 		} else {
 
@@ -113,9 +113,9 @@ class Usuarios extends CI_Controller {
 
 			#mensagem de confirmação
 			if ($id == ""){
-				$this->session->set_flashdata("error","<div class='ui red message'>Falha ao salvar.</div>");
+				$this->session->set_flashdata("error","Falha ao salvar.");
 			} else {
-				$this->session->set_flashdata("success","<div class='ui green message'>Salvo com sucesso.</div>");
+				$this->session->set_flashdata("success","Salvo com sucesso.");
 			}
 
 			redirect("usuarios/index/" . $id );
