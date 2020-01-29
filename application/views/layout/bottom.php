@@ -38,11 +38,17 @@
   }
   ?>
   <script>
-  $('p:contains("SELECT"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
-  $('p:contains("UPDATE"),p:contains("update")').addClass("ui green message").next().addClass("ui green message");
-  $('p:contains("INSERT"),p:contains("insert")').addClass("ui green message").next().addClass("ui green message");
-  $('p:contains("DELETE"),p:contains("delete")').addClass("ui green message").next().addClass("ui green message");
-  $('p:contains("SQLSTATE")').removeClass("blue green").addClass("ui red message").prev().addClass("ui red message");
+  divDebugger = $("div.debugger");
+  divDebugger.find('p:contains("CREATE TABLE"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
+  divDebugger.find('p:contains("ALTER TABLE"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
+  divDebugger.find('p:contains("DROP TABLE"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
+  divDebugger.find('p:contains("CREATE TEMPORARY"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
+  divDebugger.find('p:contains("CREATE INDEX"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
+  divDebugger.find('p:contains("SELECT"),p:contains("select"),p:contains("PRAGMA")').addClass("ui blue message").next().addClass("ui blue message");
+  divDebugger.find('p:contains("UPDATE"),p:contains("update")').addClass("ui green message").next().addClass("ui green message");
+  divDebugger.find('p:contains("INSERT"),p:contains("insert")').addClass("ui green message").next().addClass("ui green message");
+  divDebugger.find('p:contains("DELETE"),p:contains("delete")').addClass("ui green message").next().addClass("ui green message");
+  divDebugger.find('p:contains("SQLSTATE")').removeClass("blue green").addClass("ui red message").prev().addClass("ui red message");
   </script>
   </div>
 <?php endif; ?>

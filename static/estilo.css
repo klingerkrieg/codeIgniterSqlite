@@ -39,3 +39,44 @@ a{
     vertical-align: baseline !important;
     margin-right: 3px;
 }
+
+.red {
+    color:red;
+}
+
+.tableInput{
+    width:80px !important;
+}
+
+.salvo{
+    background-color: aquamarine !important;
+}
+
+.falha{
+    background-color: orange !important;
+}
+
+.testeJS{
+    width:16px;
+    float:right;
+}
+
+
+/**
+
+Semantic FIX
+
+*/
+
+.buttonFix{
+    width:100%;
+}
+
+/*.groupItemSpace{
+    position: relative;
+}
+
+.groupItemSpace div, .groupItemSpace input, .groupItemSpace button{
+    position: absolute;
+    bottom: 4px;
+}*/

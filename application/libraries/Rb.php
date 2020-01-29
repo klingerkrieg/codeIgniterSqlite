@@ -1,5 +1,10 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
+/**
+ * Retorna um array que pode ser inserido no banco de dados
+ * ignora os dados de post que não estejam em fields
+ * se for uma chave estrangeira preenche com null
+ */
 function prepare_fields($fields,$post){
 	$f = [];
 	foreach($fields as $key){
@@ -14,8 +19,10 @@ function prepare_fields($fields,$post){
 	return $f;
 }
 
-
-function val($arr,$key,$subKey=null){
+/**
+ * Retorna o valor de um array, caso nao exista o valor, retorna em branco
+ */
+function val($arr,$key,$subKey=""){
 	
 	if (isset($arr[$key])){
 		if ($subKey != null){
@@ -23,6 +30,12 @@ function val($arr,$key,$subKey=null){
 		}
 		return $arr[$key];
 	} else {
+		if (is_bool($subKey)){
+			return $subKey;
+		} else
+		if ($subKey === null){
+			return null;
+		}
 		return "";
 	}
 	
@@ -34,16 +47,15 @@ function saveLogs(){
 	$_SESSION["logs"] = $logs;
 }
 
-
  
 class Rb {
      
     function __construct() {
         // Include database configuration
-        include(APPPATH.'/config/database.php');
+		include(APPPATH.'/config/database.php');
+		// Get Redbean
+		include(APPPATH.'/third_party/rb/rb.php');
          
-        // Get Redbean
-        include(APPPATH.'/third_party/rb/rb.php');
          
         // Database data
         $host 	= $db[$active_group]['hostname'];
@@ -75,5 +87,8 @@ class Rb {
 		R::getDatabaseAdapter()->getDatabase()->getLogger()->setMode(1);
 		
         
-    } //end __contruct()
+	} //end __contruct()
+
+
+
 } //end Rb

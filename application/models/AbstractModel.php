@@ -9,6 +9,7 @@ class AbstractModel extends CI_Model {
 
 	#para fazer associacoes entre tabelas
 	#defina uma matriz com os relacionamentos [['table'=>'usuarios', 'key'=>'usuario_id'], ...]
+	public $oneToOne = false;
 	public $oneToMany = false;
 	public $manyToOne = false;
 	#a matriz do manyToMany requer 3 itens
@@ -50,6 +51,8 @@ class AbstractModel extends CI_Model {
 			$this->arrayFields = false;
 		
 		
+		
+		
 
 		#se tiver campo de seguranca
 		if ($this->secureField != false){
@@ -66,7 +69,7 @@ class AbstractModel extends CI_Model {
 		if ($this->arrayFields != false){
 			foreach($this->arrayFields as $field){
 				if (isset($obj->$field) && !is_array($obj->$field))
-					$obj->$field = explode(";",$obj->$field);
+					$obj->$field = json_decode($obj->$field);
 			}
 		}
 		return $obj;
@@ -79,6 +82,8 @@ class AbstractModel extends CI_Model {
 
 			//se houver id no POST, provavelmente é porque houve erro de validacao
 			//retorna os dados que foram submetidos pelo formulário
+			//não é necessário que id tenha um valor
+			//o fato de existir a id, já indica que foi enviado pelo formulário
 			if (isset($_POST['id'])){
 				$data = $_POST;
 				if ($_POST['id'] != ""){
@@ -101,11 +106,74 @@ class AbstractModel extends CI_Model {
 			//aquele elemento da tabela que tem aquela id
 			$obj = R::load($this->table,$id);
 
+			#se nao encontrar nada, retorna um array vazio
+			if ($obj->id == 0){
+				return [];
+			}
+
 			#busca os registros relacionados
 			if ($this->manyToOne != false){
 				foreach($this->manyToOne as $rel){
-					$name = $rel["table"];
-					$disc = $obj->fetchAs( $rel["table"] )->$name;
+					$field = $rel["table"];
+					if (isset($rel["field"]))
+						$field = $rel["field"];
+
+					#se for autorelacionamento é preciso compor o own__List
+					#o redbean nao faz sozinho
+					if ($rel["table"] == $this->table){
+						$own = "own". ucfirst($field) . "List";
+						$arr = R::find($this->table,"{$field}_id = ?",[$obj->id]);
+						$obj->$own = $arr;
+						$assoc = $obj->fetchAs( $rel["table"] )->$field;
+					}
+					
+					
+					$assoc = $obj->fetchAs( $rel["table"] )->$field;
+				}
+			}
+
+			if ($this->oneToOne != false){
+				foreach($this->oneToOne as $rel){
+					#isso só é necessário quando se está
+					#no lado que não tem a chave
+					if ($this->table != $rel["side"]){
+						$tblName = $rel["side"];
+						$obj->$tblName = R::findOne($tblName," {$this->table}_id = ?", [$id]);
+					}
+				}
+			}
+
+
+			if ($this->manyToMany != false){
+				foreach($this->manyToMany as $rel){
+					#isso só é necessário quando em autorelacionamento
+					if ($this->table == $rel["table"]){
+						$field = $rel["field"];#field obrigatório
+						$arr = R::findAll($rel["assocTable"]," {$field}_id = ? or {$this->table}_id = ?", [$id, $id]);
+
+						#busca o restante das informacoes
+						foreach($arr as $ln){
+							$r2 = $ln->fetchAs($this->table)->$field;
+							$tbl = $this->table;
+							$r3 = $ln->fetchAs($this->table)->$tbl;
+						}
+					} else {
+						$tbl1 = $rel["table"];
+						if (isset($rel["field"]))
+							$tbl1 = $rel["field"];
+						$tbl2 = $this->table;
+						$arr = R::findAll($rel["assocTable"]," {$this->table}_id = ?", [$id]);
+						
+						#busca o restante das informacoes
+						foreach($arr as $ln){
+							$r2 = $ln->fetchAs($tbl1)->$tbl1;
+							$r3 = $ln->fetchAs($tbl2)->$tbl2;
+						}
+					}
+
+					#add os dados
+					$own = "own". ucfirst($rel["assocTable"]) ."List";
+					$obj->$own = $arr;
 				}
 			}
 
@@ -117,27 +185,68 @@ class AbstractModel extends CI_Model {
 		$where = [];
 		$whereData = [];
 		foreach($data as $key=>$value){
-			array_push($where, "$key = ?");
-			array_push($whereData, $value);
+			if (in_array($key,$this->fields)){
+				array_push($where, "$key = ?");
+				array_push($whereData, $value);
+			}
 		}
 		$where = implode(" and ", $where);
-
+		
 		return R::findOne($this->table,$where,$whereData);
 	}
 
 	//recebe o número da página que será exibida, inicia na 1
-	public function pagination($per_page, $page, $busca = null, $orderBy = null){
+	public function pagination($arr=""){
 
+		include(APPPATH.'/config/config.php');
+		$busca = null;
+		$order_by = null;
+		$per_page = $config['per_page'];
+		
+		
+		if (is_string($arr)){
+			$busca = $arr;
+		} else {
+			$busca = $arr;
+			$order_by = val($arr,"order_by", null);
+			$per_page = val($arr,"per_page", null);
+			if ($per_page == null)
+				$per_page = $config['per_page'];
+		}
+		
+		#página atual
+		if (isset($_GET['page'])){
+			$page = $_GET['page']-1;
+		} else {
+			$page = 0;
+		}
 		//Quantidade de itens por pagina
-		$loc = ($page-1) * $per_page;
+		$loc = $page * $per_page;
 
 		$where = [];
 		$values = [];
 		$joins = [];
 
-		#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields
-		$fields = (count($this->searchFields) == 0) ? $this->fields : $this->searchFields;
-
+		#se o searchFields tiver sido preenchido, usa ele, se nao, usa o fields e as keys de todos os relacionamentos
+		if (count($this->searchFields) > 0){
+			$fields = $this->searchFields;
+		} else {
+			$fields = $this->fields;
+			if ($this->manyToMany) foreach($this->manyToMany as $rel){
+				array_push($fields,$rel["key"]);
+			}
+			if ($this->manyToOne) foreach($this->manyToOne as $rel){
+				array_push($fields,$rel["key"]);
+			}
+			if ($this->oneToMany) foreach($this->oneToMany as $rel){
+				array_push($fields,$rel["key"]);
+			}
+			if ($this->oneToOne) foreach($this->oneToOne as $rel){
+				array_push($fields,$rel["key"]);
+			}
+		}
+		
+		#BUSCA AVANCADA
 		if (is_array($busca)){
 
 			foreach($fields as $field ){
@@ -149,9 +258,9 @@ class AbstractModel extends CI_Model {
 					if ($busca[$field] == "0"){
 						continue;
 					}
-
+					
 					# se for campos de checkbox
-					if (is_array($busca[$field])){
+					if (is_array($busca[$field]) && strstr($field,"_id") == false){
 
 						#se estiver entre os campos de array
 						#quer dizer que no banco estará salvo separado por ;
@@ -160,7 +269,7 @@ class AbstractModel extends CI_Model {
 							$chk = [];
 							$writer = R::getWriter();
 							foreach($busca[$field] as $v){
-								array_push($chk, "$field like '%;".addslashes ($v).";%'");
+								array_push($chk, "$field like '%".addslashes ($v)."%'");
 							}
 							$chk = "(" . implode(" or ", $chk) . ")";
 							#gera algo como: (field like '%;1;%' or field like '%;2;%')
@@ -175,38 +284,95 @@ class AbstractModel extends CI_Model {
 							}
 							$chk = implode(",",$chk);
 							#gera algo como: field IN (1,2)
-							array_push($where, $this->decamelize($field)." IN ($chk)");
+							array_push($where, $this->table.".".$this->decamelize($field)." IN ($chk)");
 						}
 						continue;
 					} else
-					if (trim($busca[$field]) == ""){
+					if (is_string($busca[$field]) && trim($busca[$field]) == ""){
 						continue;
 					}
 
 
+					
+
+					#JOINS
 					$tbl = "";
 					if (strstr($field,"_id")){
-
+						$nextField = true;
 						#constroi o nome da tabela
 						$tbl = str_replace("_id","",$field);
-						$joinField = "";
+						#IDS
+						$ids = $busca[$field];
+						if (!is_array($ids)){
+							$ids = [$ids];
+						}
+						$ids = implode(", ",$ids);
+						
+
+
 						#procura nos relacionamentos muitos para muitos
-						foreach($this->manyToMany as $rel){
-							if (strstr($tbl,$rel["table"])){#permite funcionar no singular ou plural
-															#groups_id group_id
-								$joinField = $rel["assocTable"].".".$field;
-
+						if ($this->manyToMany) foreach($this->manyToMany as $rel){
+							#test:Busca *x* (Disc. side)
+							#test:Busca *x* (Aluno side)
+							if ($rel["table"] == $tbl){
 								$joinStr = "inner join {$rel['assocTable']} on "
-										." {$this->table}.id = {$rel['assocTable']}.{$this->table}_id ";
-
-
+										." {$this->table}.id = {$rel['assocTable']}.{$this->table}_id  and "
+										." {$rel['assocTable']}.{$tbl}_id IN ($ids)";
 								array_push($joins, $joinStr);
+								$nextField = false;
+								break;
 							}
 						}
+						if (!$nextField) continue;
+						
+						
+						if ($this->oneToOne) foreach($this->oneToOne as $rel){
+							if ($rel["table"] == $tbl){
+								if ($rel["side"] == $this->table){
+									#test:Busca 1x1 (Coord. side)
+									array_push($where, $this->table.".".$this->decamelize($field)." IN ($ids)");
+								} else {
+									#test:Busca 1x1 (Prof. side)
+									$joinStr = "inner join {$rel['table']} on "
+										." {$this->table}.id = {$rel['table']}.{$this->table}_id and "
+										." {$rel['table']}.id IN($ids) ";
+									array_push($joins, $joinStr);
+								}
+								$nextField = false;
+								break;
+							}
+						}
+						if (!$nextField) continue;
+
+						
+						if ($this->oneToMany) foreach($this->oneToMany as $rel){
+							if ($rel["table"] == $tbl){
+								#test:Busca 1x* (Prof. side)
+								$joinStr = "inner join {$rel['table']} on "
+										." {$this->table}.id = {$rel['table']}.{$this->table}_id and "
+										." {$rel['table']}.id IN($ids) ";
+										
+								array_push($joins, $joinStr);
+								$nextField = false;
+								break;
+							}
+						}
+						if (!$nextField) continue;
+
+
+						if ($this->manyToOne) foreach($this->manyToOne as $rel){
+							if ($rel["table"] == $tbl){
+								#test:Busca *x1 (Disc. side)
+								array_push($where, $this->table.".".$this->decamelize($field)." IN ($ids)");
+								$nextField = false;
+								break;
+							}
+						}
+						if (!$nextField) continue;
 						
 					}
 
-					array_push($where, $this->decamelize($field)." like ?");
+					array_push($where, $this->table.".".$this->decamelize($field)." like ?");
 					array_push($values,"%".$busca[$field]."%");
 				}
 			}
@@ -217,6 +383,7 @@ class AbstractModel extends CI_Model {
 			}
 
 		} else {
+			#BUSCA SIMPLES
 			if ($busca != null){
 				
 				foreach($fields as $field ){
@@ -226,7 +393,7 @@ class AbstractModel extends CI_Model {
 						continue;
 					}
 
-					array_push($where, $this->decamelize($field)." like ?");
+					array_push($where, $this->table.".".$this->decamelize($field)." like ?");
 					array_push($values,"%".$busca."%");
 				}
 			}
@@ -239,28 +406,63 @@ class AbstractModel extends CI_Model {
 		
 		$joins = implode (" ", $joins);
 
-		if ($orderBy == null){
-			$orderBy = $this->decamelize($this->fields[0]);
+		if ($order_by == null){
+			$order_by = $this->decamelize($this->fields[0]);
 		}
 		
 		//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
 		$list = R::findAll($this->table , $joins 
 							. $where 
 							. " ORDER BY " 
-							. $orderBy
+							. $order_by
 							. " LIMIT $loc,$per_page ", $values );
+
+		
 		
 		//Recupera a quantidade total de itens na tabela
 		$qtd = R::count($this->table, $joins . $where, $values );
+
+		
+		foreach($list as $key=>$data){
+
+			#em caso de 1 para 1, tem que recuperar os dados manualmente
+			if ($this->oneToOne != false){
+				foreach($this->oneToOne as $rel){
+					#isso só é necessário quando se está
+					#no lado que não tem a chave
+					if ($this->table != $rel["side"]){
+						$tblName = $rel["side"];
+						$list[$key]->$tblName = R::findOne($tblName," {$this->table}_id = ?", [$data->id]);
+					}
+				}
+			}
+
+			#em caso de autorelacionamento, tem que dar o fetchAs
+			if ($this->manyToOne != false){
+				foreach($this->manyToOne as $rel){
+					if ($rel["table"] == $this->table){
+						$field = $rel["table"];
+						if (isset($rel["field"])){
+							$field = $rel["field"];
+						}
+						$assoc = $list[$key]->fetchAs( $this->table )->$field;
+					}
+				}
+			}
+		}
+		
+		
 		
 		//Retorna um array com os dados, total de registros,
 		//qtd de itens por pagina e a quantidade máxima de páginas
 		return ["data"=>$list,"total_rows"=>$qtd, "per_page"=>$per_page, "page_max"=>ceil($qtd/$per_page)];
 	}
 		
-	public function options($field){
-		$all = R::getAll("select id, {$field} from {$this->table}");
-		return [""] + toOptions($all);
+	public function options(){
+		$fields = func_get_args();
+		$fields = implode(",",$fields);
+		$all = R::getAll("select id, $fields from {$this->table}");
+		return toOptions($all);
 	}
 	
 	public function all(){
@@ -270,6 +472,9 @@ class AbstractModel extends CI_Model {
 	}
 	
 	public function delete($id){
+
+		if ($this->saveLog)
+			$this->saveState($id);
 		
 		$obj = R::load($this->table,$id);
 		
@@ -281,10 +486,10 @@ class AbstractModel extends CI_Model {
 					R::trash($assoc);
 				}
 			}
+		#desfaz as associacoes
 		if ($this->oneToMany)
-			#desfaz as associacoes
 			foreach($this->oneToMany as $rel){
-				$var = "own".ucfirst($rel["assocTable"])."List";
+				$var = "own".ucfirst($rel["table"])."List";
 				foreach ($obj->$var as $assoc ){
 					$tbl = $this->table;
 					$assoc->$tbl = null;
@@ -331,16 +536,67 @@ class AbstractModel extends CI_Model {
 		
 		foreach($fields as $key=>$val){
 			if (is_array($val)){
-				$obj[$key] = implode(";",$val).";";
+				#$obj[$key] = implode(";",$val).";";
+				
+				#remove o input hidden
+				$val2 = [];
+				foreach($val as $k=>$v){
+					if ($v != ""){
+						array_push($val2,$v);
+					}
+				}
+				$obj[$key] = json_encode($val2);
 			} else {
 				$obj[$key] = trim($val);
 			}
 		}
 
 		#verifica se existe relacionamentos
+		if ($this->oneToOne){
+			foreach($this->oneToOne as $rel){
+				if (isset($data[$rel["key"]])){
+
+					#em relacionamento 1 para 1, a chave deve ficar sempre de um lado só
+					#o programador escolhe o lado
+					if ($rel["side"] == $this->table){
+						$field = $rel["table"];
+						if (isset($rel["field"]))
+							$field = $rel["field"];
+
+						if ($data[$rel["key"]] != 0){
+							#seta todos que estao relacionados com esse para NULL
+							R::exec("UPDATE $this->table set {$field}_id = NULL WHERE {$field}_id = ?",[$data[$rel["key"]]]);
+
+							#recupera o item da tabela
+							$another = R::load($rel["table"], $data[$rel["key"]]);
+							#relaciona no formato um para um
+							$obj->$field = $another;
+						} else {
+							$obj->$field = null;
+						}
+					} else {
+						#se eu estiver do outro lado
+						$field = $this->table;
+						if ($data[$rel["key"]] != 0){
+							#recupera o item da tabela do lado correto
+							$another = R::load($rel["side"], $data[$rel["key"]]);
+							#relaciona no formato um para um
+							$another->$field = $obj;
+						} else {
+							#apaga o relacionamento
+							$another = R::findOne($rel["side"], "{$this->table}_id = ?", [$obj->id]);
+							$another->$field = null;
+						}
+						R::Store($another);
+					}
+				}
+			}
+		}
+
+		
 		if ($this->oneToMany){
 			foreach($this->oneToMany as $rel){
-				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
+				if (isset($data[$rel["key"]]) && $data[$rel["key"]] != 0){
 					#recupera o item da tabela
 					$another = R::load($rel["table"], $data[$rel["key"]]);
 					#para relacionar um para muitos utilize essa notacao
@@ -354,19 +610,30 @@ class AbstractModel extends CI_Model {
 
 		if ($this->manyToOne){
 			foreach($this->manyToOne as $rel){
-				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
+				if (isset($data[$rel["key"]]) && $data[$rel["key"]] != 0){
 					#recupera o item da tabela
 					$another = R::load($rel["table"],$data[$rel["key"]]);
 					$tblName = $rel["table"];
+					if (isset($rel["field"]))
+						$tblName = $rel["field"];
+					
 					#associa o item
 					$obj->$tblName = $another;
+				} else 
+				#remove a associação
+				if (isset($data[$rel["key"]]) && $data[$rel["key"]] == 0){
+					$tblName = $rel["table"];
+					if (isset($rel["field"]))
+						$tblName = $rel["field"];
+					$obj->$tblName = null;
 				}
 			}
 		}
 
+
 		if ($this->manyToMany){
 			foreach($this->manyToMany as $rel){
-				if (val($data,$rel["key"]) != "" && val($data,$rel["key"]) != 0){
+				if (isset($data[$rel["key"]]) && $data[$rel["key"]] != 0){
 					#recupera o item da tabela
 					$another = R::load($rel["table"], $data[$rel["key"]]);
 					#cria a tabela de associacao
@@ -374,6 +641,8 @@ class AbstractModel extends CI_Model {
 
 					#associa os itens
 					$tbl1 = $rel["table"];
+					if (isset($rel["field"]))
+						$tbl1 = $rel["field"];
 					$tbl2 = $this->table;
 
 					$found = R::find($rel["assocTable"], "{$tbl1}_id = ? and {$tbl2}_id = ?", [$another->id, $obj->id]);
@@ -390,14 +659,25 @@ class AbstractModel extends CI_Model {
 		}
 
 		$obj = $this->preSave($obj, $data);
+
+		if ($this->saveLog && $obj->id != 0)
+			$this->saveState($obj->id);
 		
 		$id = R::store($obj);
 
 		$this->posSave($obj, $data);
 
-		$this->saveLog();
+		if ($this->saveLog)
+			$this->saveLog();
 
 		return $id;
+	}
+
+
+	private $tmpState = "";
+	public function saveState($id){
+		$obj = R::load($this->table, $id);
+		$this->tmpState = json_encode($obj);
 	}
 
 
@@ -407,14 +687,16 @@ class AbstractModel extends CI_Model {
 			$logs = R::getLogs();
 
 			foreach($logs as $log){
-				if (strstr(strtolower($log),"insert") ||
-					strstr(strtolower($log),"update") || 
-					strstr(strtolower($log),"delete")){
-
-						$dblog = R::dispense("logs");
-						$dblog->usuario_id = val($_SESSION,"user_id");
-						$dblog->sql = strip_tags($log);
-						R::store($dblog);
+				
+				if (strstr(strtolower($log),"insert") 
+					|| strstr(strtolower($log),"update") 
+					|| strstr(strtolower($log),"delete")){
+					
+					$dblog = R::dispense("logs");
+					$dblog->usuario_id = val($_SESSION,"user_id");
+					$dblog->state = $this->tmpState;
+					$dblog->sql = strip_tags($log);
+					R::store($dblog);
 				}
 			}
 		}
