@@ -567,7 +567,6 @@ class AbstractModel extends CI_Model {
 		
 		foreach($fields as $key=>$val){
 			if (is_array($val)){
-				#$obj[$key] = implode(";",$val).";";
 				
 				#remove o input hidden
 				$val2 = [];
@@ -616,9 +615,11 @@ class AbstractModel extends CI_Model {
 						} else {
 							#apaga o relacionamento
 							$another = R::findOne($rel["side"], "{$this->table}_id = ?", [$obj->id]);
-							$another->$field = null;
+							if ($another != null)
+								$another->$field = null;
 						}
-						R::Store($another);
+						if ($another != null)
+							R::Store($another);
 					}
 				}
 			}

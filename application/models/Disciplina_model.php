@@ -31,8 +31,7 @@ class Disciplina_model extends AbstractModel {
 							  "assocTable"=>"alunosdisciplinas"]];
 
 
-		public $opcoesCargaHoraria = [0=>"",
-									  10=>"10 h/a", 
+		public $opcoesCargaHoraria = [10=>"10 h/a", 
 									  30=>"30 h/a", 
 									  45=>"45 h/a", 
 									  60=>"60 h/a", 

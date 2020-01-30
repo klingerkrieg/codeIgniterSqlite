@@ -41,7 +41,10 @@ class Login extends CI_Controller {
 				$_SESSION["email"] = $user->email;
 				$_SESSION["user_id"] = $user->id;
 
-				redirect("usuarios/index/");
+				if (Seguranca::temPermissao("Comum"))
+					redirect("usuarios/index/");
+				else
+					redirect("professores/index/");
 			} else {
 				$this->session->set_flashdata("message","E-mail ou senha incorretos.");
 				
