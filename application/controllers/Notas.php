@@ -34,14 +34,21 @@ class Notas extends CI_Controller {
 	}
 
 	
-	public function lancar($idAux){
+	public function disciplinas($query=""){
+		$disciplinas = $this->Disciplina_model->findAll(["nome like"=>$query]);
+		$json = ["success"=>true, "results"=>[]];
 
-		print $this->Disciplina_model->lancar($idAux, $_GET);
+		foreach($disciplinas as $ln){
+			array_push($json["results"], ["name"=>$ln["nome"], "value"=>$ln["id"]]);
+		}
 		
+		print json_encode($json);
 	}
+
 	
-	
-	
+	public function lancar($idAux){
+		print $this->Disciplina_model->lancar($idAux, $_GET);
+	}
 
 	
 }

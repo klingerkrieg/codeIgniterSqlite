@@ -181,7 +181,7 @@ class AbstractModel extends CI_Model {
 		}
 	}
 
-	public function findOne($data){
+	private function buildSimpleSearch($data){
 		$where = [];
 		$whereData = [];
 		foreach($data as $key=>$value){
@@ -191,8 +191,19 @@ class AbstractModel extends CI_Model {
 			}
 		}
 		$where = implode(" and ", $where);
-		
+		return [$where, $whereData];
+	}
+
+	#falta teste
+	public function findOne($data){
+		list($where, $whereData) = $this->buildSimpleSearch($data);
 		return R::findOne($this->table,$where,$whereData);
+	}
+
+	#falta teste
+	public function findAll($data){
+		list($where, $whereData) = $this->buildSimpleSearch($data);
+		return R::find($this->table,$where,$whereData);
 	}
 
 	/**
@@ -207,26 +218,20 @@ class AbstractModel extends CI_Model {
 		$busca = null;
 		$order_by = null;
 		$per_page = $config['per_page'];
-		
+		$limit = false;
 		
 		if (is_string($arr)){
 			$busca = $arr;
 		} else {
 			$busca = $arr;
-			$order_by = val($arr,"order_by", null);
-			$per_page = val($arr,"per_page", null);
+			$order_by 	= val($arr,"order_by", null);
+			$per_page 	= val($arr,"per_page", null);
+			$limit 		= val($arr,"limit", false);
 			if ($per_page == null)
 				$per_page = $config['per_page'];
 		}
 		
-		#página atual
-		if (isset($_GET['page'])){
-			$page = $_GET['page']-1;
-		} else {
-			$page = 0;
-		}
-		//Quantidade de itens por pagina
-		$loc = $page * $per_page;
+		
 
 		$where = [];
 		$values = [];
@@ -414,13 +419,32 @@ class AbstractModel extends CI_Model {
 		if ($order_by == null){
 			$order_by = $this->decamelize($this->fields[0]);
 		}
+
+
+		#página atual
+		if (isset($_GET['page'])){
+			$page = $_GET['page']-1;
+		} else {
+			$page = 0;
+		}
+		//Quantidade de itens por pagina
+		$loc = $page * $per_page;
 		
+
 		//Seleciona todos os dados, ordenando pelo primeiro campo da tabela
-		$list = R::findAll($this->table , $joins 
-							. $where 
-							. " ORDER BY " 
-							. $order_by
-							. " LIMIT $loc,$per_page ", $values );
+		$instruction = $joins . $where . " ORDER BY " . $order_by;
+		
+		#se limit for definido com um valor
+		if ($limit != false){
+			#traz sem paginacao, a quantidade definida
+			$instruction .= " LIMIT $limit ";
+		} if ($per_page != "all") {
+			#se per_page == all, trará todos, sem paginação
+			$instruction .= " LIMIT $loc,$per_page ";
+		}
+		
+
+		$list = R::findAll($this->table , $instruction, $values );
 
 		
 		
@@ -457,7 +481,9 @@ class AbstractModel extends CI_Model {
 		}
 		
 		
-		
+		if ($per_page == "all"){
+			$per_page = 1;
+		}
 		//Retorna um array com os dados, total de registros,
 		//qtd de itens por pagina e a quantidade máxima de páginas
 		return ["data"=>$list,"total_rows"=>$qtd, "per_page"=>$per_page, "page_max"=>ceil($qtd/$per_page)];

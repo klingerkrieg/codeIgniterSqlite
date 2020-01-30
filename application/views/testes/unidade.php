@@ -3,7 +3,7 @@ include 'header.php';
 
 print $report;
 
-include 'layout/bottom.php';
+include 'bottom.php';
 ?>
 
 <style>

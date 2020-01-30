@@ -148,6 +148,11 @@ class HTMLInput extends HTMLElement {
                 $this->required = "<span class='red'>*</span>";
             }
         }
+
+
+        #se a id nao for preenchida, será o name
+        if ($this->id == null)
+            $this->id = str_replace("[]","",$this->name);
     }
 
     function writeElement(){
@@ -162,21 +167,20 @@ class HTMLInput extends HTMLElement {
             
             $html = "<div class='{$this->size} field'> ";
 
+            if ($this->label != null) {
+                $html .= "<label for='{$this->id}'>{$this->label} {$this->required}</label>";
+            }
+
             if ($this->icon){
                 $html .= "<div class='ui left icon input'>";
                 $html .= "<i class='{$this->icon} icon'></i>";
-            }
-
-            $input = $this->writeElement();
-
-            if ($this->label != null) {
-                $html .= "<label>{$this->label} {$this->required} $input</label>";
             } else {
-                $html .= $input;
+                $html .= "<div class='ui input'>";
             }
 
-            if ($this->icon)
-                $html .= "</div>";
+            $html .= $this->writeElement();
+            
+            $html .= "</div>";
 
             $html .= error($this->name);
 
@@ -187,19 +191,23 @@ class HTMLInput extends HTMLElement {
 }
 
 
+
 class HTMLSelect extends HTMLInput {
 
     protected $options = [];
     protected $blank = true;
+    protected $natural = false;
+    protected $search = true;
 
     /**
      * $name = Name do input
-     * $options [id, readonly, required, options, label, blank=true]
+     * $options [id, readonly, required, options, label, search=true, blank=true, natural=false]
      */
     function __construct($name,$options=[]){
+        $this->placeholder = "Selecione uma opção";
         parent::__construct($name,$options);
         if (is_array($options)){
-            $this->getFromOptions(["blank"],$options);
+            $this->getFromOptions(["search","blank","natural"],$options);
             if (isset($options["options"])){
                 $this->options = $options["options"];
             }
@@ -207,20 +215,43 @@ class HTMLSelect extends HTMLInput {
     }
 
     function writeElement(){
-        if ($this->blank){
-            $this->options = [""] + $this->options;
-        }
-        
-        $html = "<select ".$this->attributes().">";
-        foreach($this->options as $k=>$val){
-            $selected = "";
-            if ($this->value == $k){
-                $selected = "selected";
+        if ($this->natural){
+            $html = "<select ".$this->attributes().">";
+
+            if ($this->blank){
+                $html .= "<option value=''>{$this->label}</option>";
             }
-            $html .= "<option $selected value='$k'>$val</option>";
+
+            foreach($this->options as $k=>$val){
+                $selected = "";
+                if ($this->value == $k){
+                    $selected = "selected";
+                }
+                $html .= "<option $selected value='$k'>$val</option>";
+            }
+            $html .= "</select>";
+        } else {
+            $this->removeAttributes(["type","name","placeholder"]);
+            
+            $this->class .= " ui fluid selection dropdown block";
+            if ($this->search)
+                $this->class .= " search";
+            
+            #Versão mais elegante do select com semantic
+            $html = "<div ".$this->attributes().">";
+            $html .= "<input type='hidden' name='{$this->name}' value='{$this->value}' >";
+            $html .= "<i class='dropdown icon'></i>";
+
+            $html .= "<div class='default text'>{$this->placeholder}</div>";
+            
+            $html .= "<div class='menu'>";
+            foreach($this->options as $k=>$val){
+                $html .= "<div class='item' data-value='$k' >$val</div>";
+            }
+            $html .= "</div></div>";
         }
-        $html .= "</select>";
         return $html;
+
     }
 
 }
@@ -235,7 +266,7 @@ class HTMLRadio extends HTMLSelect {
         parent::__construct($name,$options);
         $this->type = "radio";
         $this->blank = false;
-        $this->removeAttributes(["value"]);
+        $this->removeAttributes(["value","id"]);
     }
 
     function writeElement(){
@@ -243,8 +274,13 @@ class HTMLRadio extends HTMLSelect {
         if ($this->type == "checkbox") {
             $html .= "<input type='hidden' name='$this->name' value=''>";
         }
+
+        
+        $id_num = 0;
+
+
         foreach($this->options as $key=>$option){
-            $html .= "<label class='field'>";
+
             $checked = "";
             if (is_array($this->value)){
                 if (in_array($key, $this->value)){
@@ -254,8 +290,19 @@ class HTMLRadio extends HTMLSelect {
             if (!is_null($this->value) && $key == $this->value){
                 $checked = "checked";
             }
-            $html .= "<input $checked ".$this->attributes()." value={$key} />";
-            $html .= "$option</label>";
+            
+            $typeClass = "";
+            if ($this->type == "radio"){
+                $typeClass = "radio";
+            }
+
+            $id = $this->id ."_". $id_num++;
+
+            $html .= "<div class='ui field $typeClass checkbox'>";
+            $html .= "<input id='$id' ".$this->attributes()." $checked value='$key' />";
+            $html .= "<label for='$id'>$option</label>";
+            $html .= "</div>";
+
         }
         return $html."</div>";
     }
@@ -316,7 +363,7 @@ class HTMLUpload extends HTMLInput {
 
     function writeElement(){
         $this->type = "file";
-        $html = "<input ".$this->attributes()." />";
+        $html = "<input ".$this->attributes()." /></div><div>";
 
         if ($this->value != null){
             if ($this->fileType == "image"){

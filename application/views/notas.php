@@ -6,13 +6,18 @@
 <p>Você também encontrará um exemplo de Ajax (arquivo: static/notas.js).</p>
 </div>
 
+
+
+
 <?php
 // formulario de busca
 print formStart("/notas", "GET");
 
 	print flashMessage();
 
-	print new HTMLSelect("id",["label"=>"Disciplina","options"=>$disciplinas, "value"=>$_GET]);
+	print new HTMLSelect("id",["id"=>"disciplinaSearch",
+								"label"=>"Disciplina",
+								"value"=>$_GET]);
 	print new HTMLButton("Pesquisar");
 
 print formEnd();
@@ -35,8 +40,11 @@ if (isset($dados["id"])):
 		print "<tr>";
 		
 		print "<td>{$tabAux->alunos->nome}</td>";
-		print "<td><input id='nota1' class='tableInput' value='{$tabAux->nota1}' alunosdisciplinas='{$tabAux->id}'></td>";
-		print "<td><input id='nota2' class='tableInput' value='{$tabAux->nota2}' alunosdisciplinas='{$tabAux->id}'></td>";
+		#print "<td><div class='ui input'><input id='nota1' class='tableInput' value='{$tabAux->nota1}' alunosdisciplinas='{$tabAux->id}'></div></td>";
+		#print "<td><div class='ui input'><input id='nota2' class='tableInput' value='{$tabAux->nota2}' alunosdisciplinas='{$tabAux->id}'></div></td>";
+
+		print "<td>".new HTMLInput("nota1",["class"=>"tableInput","value"=>$tabAux->nota1,"attributes"=>["alunosdisciplinas"=>$tabAux->id]])."</td>";
+		print "<td>".new HTMLInput("nota2",["class"=>"tableInput","value"=>$tabAux->nota2,"attributes"=>["alunosdisciplinas"=>$tabAux->id]])."</td>";
 
 		print "<td> <span id='final{$tabAux->id}'>". (($tabAux->nota1 + $tabAux->nota2)/2) ."</span></td>";
 

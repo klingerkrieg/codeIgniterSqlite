@@ -264,7 +264,7 @@ class Testes extends CI_Controller {
 		$prof = $this->Professor_model->get($professor_id);
 		$this->test(count($prof->ownDisciplinasList), 2, 'Rel. professor x disciplina (1x*) (Prof. side)');
 		#removendo disciplina
-		$this->Professor_model->removeDisciplinas($professor_id, $disciplina_id);
+		$this->Professor_model->removerDisciplinas($professor_id, $disciplina_id);
 		$prof = $this->Professor_model->get($professor_id);
 		$this->test(count($prof->ownDisciplinasList), 1, 'Rel. professor x disciplina (1x*) (Prof. side) [removendo disciplina]');
 		#pelo lado da disciplina

@@ -9,14 +9,7 @@ $(function(){
             res = eval(teste);
             showTestResult(this,res);
             return;
-        } else
-        if (teste.indexOf("requerido") > -1){
-            showTestResult(this,$(this).prev().hasClass("red"));
-            teste = teste.replace("requerido","");
-            if (teste == ""){
-                return;
-            }
-        } 
+        }
 
         busca = $(teste);
         showTestResult(this,busca.length == 1);
@@ -24,9 +17,13 @@ $(function(){
 });
 
 function showTestResult(element, res){
+    if ($(element).hasClass("button"))
+        element = $(element);
+    else 
+        element = $(element).parent();
     if (res){
-        $(element).parent().after($("<img class='testeJS' src='"+base_url+"/static/ok.png' />"));
+        element.after($("<img class='testeJS' src='"+base_url+"/static/ok.png' />"));
     } else {
-        $(element).parent().after($("<img class='testeJS' src='"+base_url+"/static/fail.png' />"));
+        element.after($("<img class='testeJS' src='"+base_url+"/static/fail.png' />"));
     }
 }

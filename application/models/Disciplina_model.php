@@ -46,21 +46,24 @@ class Disciplina_model extends AbstractModel {
 			R::Store($obj);
 		}
 
+		#Recebe a id na tabela alunosdisciplinas e um array com a nota que foi editada
 		public function lancar($idAux, $arr){
-			
+			#busca a linha na tabela
 			$obj = R::load("alunosdisciplinas", $idAux);
-
+			#verifica se o array contém todos os campos necessários e se são numéricos
 			if (isset($arr["etapa"]) && isset($arr["nota"]) && is_numeric($arr["nota"])){
+				#verifica qual foi a etapa e atualiza a nota no objeto
 				if ($arr["etapa"] == "nota1"){
 					$obj->nota1 = $arr["nota"];
 				} else 
 				if ($arr["etapa"] == "nota2"){
 					$obj->nota2 = $arr["nota"];
 				}
+				#salva o objeto
 				R::Store($obj);
 				return true;
 			}
-
+			#se algo der errado...
 			return false;
 		}
 

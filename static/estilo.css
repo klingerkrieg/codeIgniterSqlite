@@ -69,6 +69,14 @@ Semantic FIX
 
 */
 
+.block{
+    display:block !important;
+}
+
+.checkbox label{
+    cursor:pointer !important;
+}
+
 .buttonFix{
     width:100%;
 }
