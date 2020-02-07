@@ -18,6 +18,7 @@ abstract class HTMLElement {
     protected $class = "";
     protected $style;
     protected $othersAttributes = [];
+    protected $tooltip;
 
     protected $printableAttributes = ["type","disabled","class","style","name","id"];
 
@@ -25,7 +26,7 @@ abstract class HTMLElement {
         global $semantic_sizes;
 
         if (is_array($options)){
-            $this->getFromOptions(["name","id", "type","class"],$options);
+            $this->getFromOptions(["name","id", "type","class","tooltip"],$options);
             if (isset($options["size"])){
                 if (isset($semantic_sizes[$options["size"]]))
                     $this->size = $semantic_sizes[$options["size"]]. " wide";
@@ -64,12 +65,14 @@ abstract class HTMLElement {
         foreach ($this->printableAttributes as $attr ){
             if ( isset($this->$attr) && $this->$attr != null ){
                 $val = str_replace('"',"'",$this->$attr);
-                array_push($htmlAttributes,"$attr=\"$val\"");
+                if ($val != "")
+                    array_push($htmlAttributes,"$attr=\"$val\"");
             }
         }
         foreach($this->othersAttributes as $attr=>$val){
             $val = str_replace('"',"'",$val);
-            array_push($htmlAttributes,"$attr=\"$val\"");
+            if ($val != "")
+                array_push($htmlAttributes,"$attr=\"$val\"");
         }
         return implode(" ",$htmlAttributes);
     }
@@ -98,12 +101,13 @@ class HTMLInput extends HTMLElement {
     protected $label;
     protected $value;
     protected $icon;
+    protected $right_icon;
     protected $maxlength;
     protected $div_class = "";
 
     /**
      * $name = Name do input
-     * $options [id, readonly, required, hidden, label, icon, maxlength, div_class]
+     * $options [id, readonly, required, hidden, label, icon, right_icon, maxlength, div_class]
      */
     function __construct($name,$options=[]){
         $this->name = $name;
@@ -113,7 +117,7 @@ class HTMLInput extends HTMLElement {
         $this->addAttributes(["readonly","placeholder","value","maxlength"]);
         
         if (is_array($options)){
-            $this->getFromOptions(["readonly","placeholder","label","icon","maxlength","div_class"],$options);
+            $this->getFromOptions(["readonly","placeholder","label","icon","right_icon","maxlength","div_class"],$options);
             
             #ifs especiais
             if (isset($options["required"]) || in_array("required",$options, true)){
@@ -167,7 +171,11 @@ class HTMLInput extends HTMLElement {
             return $this->writeElement();
         } else {
             
-            $html = "<div class='{$this->size} field {$this->div_class}'> ";
+            $html = "<div class='{$this->size} field {$this->div_class}' ";
+            
+            if ($this->tooltip)
+                $html .= " data-tooltip='{$this->tooltip}' data-inverted='' ";
+            $html .= ">";
 
             if ($this->label != null) {
                 $html .= "<label for='{$this->id}'>{$this->label} {$this->required}</label>";
@@ -175,6 +183,10 @@ class HTMLInput extends HTMLElement {
 
             if ($this->icon){
                 $html .= "<div class='ui left icon input'>";
+                $html .= "<i class='{$this->icon} icon'></i>";
+            } else
+            if ($this->right_icon){
+                $html .= "<div class='ui right icon input'>";
                 $html .= "<i class='{$this->icon} icon'></i>";
             } else {
                 $html .= "<div class='ui input'>";
@@ -203,7 +215,7 @@ class HTMLSearch extends HTMLInput {
      * $options [id, readonly, required, hidden, label, icon, maxlength, div_class, url, display_value]
      */
     function __construct($name,$options=[]){
-        $this->div_class = "ui search autocomplete_livro";
+        $this->div_class = "ui search";
         parent::__construct($name,$options);
         $this->prompt_id = $this->id . "_prompt";
         if (is_array($options)){
@@ -217,7 +229,8 @@ class HTMLSearch extends HTMLInput {
     }
 
     function writeElement(){
-        $this->url = site_url() . "/" . $this->url;
+        if ($this->url != "" && !stristr("http",$this->url))
+            $this->url = site_url() . "/" . $this->url;
         $this->addAttributes(["url"]);
         $this->removeAttributes(["name","value","class", "id"]);
         return "<input name='{$this->name}' id='{$this->id}' type='hidden' value='{$this->value}'>"
@@ -236,7 +249,7 @@ class HTMLSelect extends HTMLInput {
 
     /**
      * $name = Name do input
-     * $options [id, readonly, required, options, label, search=true, blank=true, natural=false]
+     * $options [id, readonly, required, options, label, search=true, blank=true, natural=false, url]
      */
     function __construct($name,$options=[]){
         $this->placeholder = "Selecione uma opção";
@@ -271,6 +284,7 @@ class HTMLSelect extends HTMLInput {
                 $this->url = site_url() . "/" . $this->url;
                 $this->options = [];
                 $this->addAttributes(["url"]);
+                $this->search = true;
             }
             $this->removeAttributes(["type","name","placeholder"]);
             
@@ -299,15 +313,28 @@ class HTMLSelect extends HTMLInput {
 
 class HTMLRadio extends HTMLSelect {
 
+    protected $column = false;
+    protected $append = "";
+
     /**
      * $name = Name do input
-     * $options [id, required, options, label]
+     * $options [id(Value/Array), required, options, label, column=false]
      */
     function __construct($name,$options=[]){
         parent::__construct($name,$options);
         $this->type = "radio";
         $this->blank = false;
-        $this->removeAttributes(["value","id"]);
+        $this->removeAttributes(["value","id","placeholder"]);
+        if (is_array($options)){
+            $this->getFromOptions(["column", "id"],$options);
+        }
+    }
+
+    public function appendHTML($obj){
+        if (get_class($obj) == "HTMLRadio" || get_class($obj) == "HTMLCheckbox"){
+            $this->append .= $obj->writeElement();
+        }
+        return $this;
     }
 
     function writeElement(){
@@ -337,38 +364,65 @@ class HTMLRadio extends HTMLSelect {
                 $typeClass = "radio";
             }
 
-            $id = $this->id ."_". $id_num++;
+            if (is_array($this->id)){
+                $id = $this->id[$id_num];
+            } else {
+                $id = $this->id ."_". $id_num;
+            }
 
-            $html .= "<div class='ui field $typeClass checkbox'>";
+            $html .= "<div class='ui field $typeClass checkbox' ";
+            if ($this->tooltip){
+                if (is_array($this->tooltip)){
+                    $tooltip = $this->tooltip[$id_num];
+                } else {
+                    $tooltip = $this->tooltip;
+                }
+                $html .= " data-tooltip='{$tooltip}' data-inverted='' ";
+            }
+            $html .= ">";
             $html .= "<input id='$id' ".$this->attributes()." $checked value='$key' />";
             $html .= "<label for='$id'>$option</label>";
             $html .= "</div>";
 
+            $id_num++;
         }
-        return $html."</div>";
+
+        return $html. $this->append;
     }
 
     function __toString(){
-        $html = "<div class='field {$this->disabled}'>
-                    <label>$this->label {$this->required}</label>
-                    <div class='{$this->size} fields'>";
+        
+        #horizontal ou vertical
+        if ($this->column){
+            $classFields = "columnFields";
+        } else {
+            $classFields = "fields";
+        }
+
+        $html = "<div class='field {$this->disabled}'>";
+        if ($this->label)
+            $html .= "<label>$this->label {$this->required}</label>";
+        
+        $html .= "<div class='{$this->size} $classFields'>";
 
         $html .= $this->writeElement();
-        
-        return $html . "</div>" . error($this->name);
+
+        return $html . "</div></div>" . error($this->name);
     }
 }
 
 class HTMLCheckbox extends HTMLRadio {
+    protected $is_array = true;
     /**
      * $name = Name do input
-     * $options [id, required, options, label]
+     * $options [id, required, options, label, is_array]
      */
     function __construct($name,$options=[]){
         parent::__construct($name,$options);
         $this->type = "checkbox";
         $this->blank = false;
         if (is_array($options)){
+            $this->getFromOptions(["is_array"],$options);
 
             if (isset($options["value"])){
                 if (is_array($options["value"]) || is_object($options["value"])){
@@ -381,7 +435,7 @@ class HTMLCheckbox extends HTMLRadio {
                 }
             }
         }
-        if (strstr($this->name,"[]") == false){
+        if (strstr($this->name,"[]") == false && $this->is_array){
             $this->name = $this->name."[]";
         }
     }
@@ -489,6 +543,8 @@ class HTMLButton extends HTMLElement {
         
     }
 }
+
+
 
 
 class HTMLGroup{
