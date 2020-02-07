@@ -81,6 +81,15 @@ Semantic FIX
     width:100%;
 }
 
+
+.ui.grid > * {
+    padding-left:0px !important;
+    padding-right:0px !important;
+}
+
+.ui.grid {
+    margin-left:0px !important;
+}
 /*.groupItemSpace{
     position: relative;
 }

@@ -21,21 +21,21 @@ class Notas extends CI_Controller {
 	//página principal
 	public function index() {
 
-
 		#busca o registro que tem aquela id
 		$dados = $this->Disciplina_model->get(val($_GET,"id",null));
 
-
-		$disciplinas = $this->Disciplina_model->options("nome");
-		
+		if (!isset($_GET["input"])){
+			$_GET["input"] = 0;
+		}
 		
 		include view('notas');
 		
 	}
 
 	
-	public function disciplinas($query=""){
-		$disciplinas = $this->Disciplina_model->findAll(["nome like"=>$query]);
+	public function disciplinas(){
+		$query = $_GET["q"];
+		$disciplinas = $this->Disciplina_model->findAll(["nome like"=>$query, "limit"=>5]);
 		$json = ["success"=>true, "results"=>[]];
 
 		foreach($disciplinas as $ln){

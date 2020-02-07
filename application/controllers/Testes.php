@@ -163,10 +163,6 @@ class Testes extends CI_Controller {
 		$_POST = [];
 
 		
-		#findOne
-		$obj = $this->Coordenacao_model->findOne(["nome"=>"Teste"]);
-		$this->test($obj != false, true, 'Coordenacao_model->findOne');
-		
 
 		#paginacao
 		$per_page = 10;
@@ -195,6 +191,15 @@ class Testes extends CI_Controller {
 		$qtd = count($this->Coordenacao_model->all());
 		$this->test($qtd > 0, true, 'Coordenacao_model->all');
 
+		
+		#findOne
+		$obj = $this->Coordenacao_model->findOne(["nome"=>"Teste"]);
+		$this->test($obj != false, true, 'Coordenacao_model->findOne');
+		
+
+		#findAll
+		$qtd = count($this->Coordenacao_model->findAll(["nome like"=>"Teste"]));
+		$this->test($qtd > 0, true, 'Coordenacao_model->findAll (like)');
 		
 		#coordenacao
 		$this->addSeparator("Um para Um");
@@ -415,6 +420,32 @@ class Testes extends CI_Controller {
 
 	public function semantic(){
 		include view('testes/semantic');
+	}
+
+
+	public function ajax(){
+		$query = $_GET["q"];
+		$lista = [["nome"=>"joao","id"=>1],
+						["nome"=>"maria","id"=>2],
+						["nome"=>"pedro","id"=>3],
+						["nome"=>"andre","id"=>4],
+						["nome"=>"agnaldo","id"=>5]];
+		$qtd = count($lista);
+		if ($query != ""){
+			for($i = 0; $i < $qtd; $i++){
+				if (!stristr($lista[$i]["nome"], $query)){
+					unset($lista[$i]);
+				}
+			}
+		}
+
+		$json = ["success"=>true, "results"=>[]];
+
+		foreach($lista as $ln){
+			array_push($json["results"], ["name"=>$ln["nome"], "value"=>$ln["id"]]);
+		}
+		
+		print json_encode($json);
 	}
 	
 	

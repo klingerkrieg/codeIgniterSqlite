@@ -98,20 +98,22 @@ class HTMLInput extends HTMLElement {
     protected $label;
     protected $value;
     protected $icon;
+    protected $maxlength;
+    protected $div_class = "";
 
     /**
      * $name = Name do input
-     * $options [id, readonly, required, hidden, label, icon]
+     * $options [id, readonly, required, hidden, label, icon, maxlength, div_class]
      */
     function __construct($name,$options=[]){
         $this->name = $name;
         $this->type = "text";
         parent::__construct($options);
 
-        $this->addAttributes(["readonly","placeholder","value"]);
+        $this->addAttributes(["readonly","placeholder","value","maxlength"]);
         
         if (is_array($options)){
-            $this->getFromOptions(["readonly","placeholder","label","icon"],$options);
+            $this->getFromOptions(["readonly","placeholder","label","icon","maxlength","div_class"],$options);
             
             #ifs especiais
             if (isset($options["required"]) || in_array("required",$options, true)){
@@ -165,7 +167,7 @@ class HTMLInput extends HTMLElement {
             return $this->writeElement();
         } else {
             
-            $html = "<div class='{$this->size} field'> ";
+            $html = "<div class='{$this->size} field {$this->div_class}'> ";
 
             if ($this->label != null) {
                 $html .= "<label for='{$this->id}'>{$this->label} {$this->required}</label>";
@@ -191,6 +193,38 @@ class HTMLInput extends HTMLElement {
 }
 
 
+class HTMLSearch extends HTMLInput {
+    protected $url;
+    protected $display_value;
+    protected $prompt_id;
+
+    /**
+     * $name = Name do input
+     * $options [id, readonly, required, hidden, label, icon, maxlength, div_class, url, display_value]
+     */
+    function __construct($name,$options=[]){
+        $this->div_class = "ui search autocomplete_livro";
+        parent::__construct($name,$options);
+        $this->prompt_id = $this->id . "_prompt";
+        if (is_array($options)){
+            $this->getFromOptions(["url","display_value"],$options);
+            if (isset($options["value"]) && 
+                is_array($options["value"]) && 
+                key_exists($this->prompt_id, $options["value"])){
+                $this->display_value = $options["value"][$this->prompt_id];
+            }
+        }
+    }
+
+    function writeElement(){
+        $this->url = site_url() . "/" . $this->url;
+        $this->addAttributes(["url"]);
+        $this->removeAttributes(["name","value","class", "id"]);
+        return "<input name='{$this->name}' id='{$this->id}' type='hidden' value='{$this->value}'>"
+                ."<input name='{$this->prompt_id}' id='{$this->prompt_id}' class='{$this->class} prompt' ".$this->attributes()." for='{$this->id}' value='{$this->display_value}' />";
+    }
+}
+
 
 class HTMLSelect extends HTMLInput {
 
@@ -198,6 +232,7 @@ class HTMLSelect extends HTMLInput {
     protected $blank = true;
     protected $natural = false;
     protected $search = true;
+    protected $url;
 
     /**
      * $name = Name do input
@@ -207,7 +242,7 @@ class HTMLSelect extends HTMLInput {
         $this->placeholder = "Selecione uma opção";
         parent::__construct($name,$options);
         if (is_array($options)){
-            $this->getFromOptions(["search","blank","natural"],$options);
+            $this->getFromOptions(["search","blank","natural","url"],$options);
             if (isset($options["options"])){
                 $this->options = $options["options"];
             }
@@ -231,6 +266,12 @@ class HTMLSelect extends HTMLInput {
             }
             $html .= "</select>";
         } else {
+            #se tem url não terá options
+            if ($this->url != ""){
+                $this->url = site_url() . "/" . $this->url;
+                $this->options = [];
+                $this->addAttributes(["url"]);
+            }
             $this->removeAttributes(["type","name","placeholder"]);
             
             $this->class .= " ui fluid selection dropdown block";
@@ -238,7 +279,7 @@ class HTMLSelect extends HTMLInput {
                 $this->class .= " search";
             
             #Versão mais elegante do select com semantic
-            $html = "<div ".$this->attributes().">";
+            $html = "<div ".$this->attributes()." >";
             $html .= "<input type='hidden' name='{$this->name}' value='{$this->value}' >";
             $html .= "<i class='dropdown icon'></i>";
 
@@ -376,10 +417,27 @@ class HTMLUpload extends HTMLInput {
     }
 }
 
+class HTMLTextArea extends HTMLInput {
+    
+    /**
+     * $name = Name do input
+     * $options [id, readonly, required, label]
+     */
+    function __construct($name,$options=[]){
+        parent::__construct($name,$options);
+    }
+
+    function writeElement(){
+        $this->removeAttributes(["type","value"]);
+        $html = "<textarea ".$this->attributes()." >{$this->value}</textarea>";
+        return $html;
+    }
+}
+
 class HTMLButton extends HTMLElement {
     protected $text;
     protected $href;
-    protected $color = "blue";
+    protected $color;
     protected $onclick;
 
     /**
@@ -389,6 +447,9 @@ class HTMLButton extends HTMLElement {
     function __construct($text,$options=[]){
         $this->text = $text;
         $this->type = "submit";
+        include(APPPATH.'/config/config.php');
+        $this->color = $config["theme_color"];
+
         parent::__construct($options);
 
         if ($this->size != null){

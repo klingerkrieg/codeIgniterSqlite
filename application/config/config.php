@@ -528,3 +528,5 @@ $config['proxy_ips'] = '';
 $config['per_page'] = 10;
 
 $config['language'] = 'portugues';
+
+$config['theme_color'] = 'blue';

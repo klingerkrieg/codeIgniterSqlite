@@ -20,9 +20,17 @@ print new HTMLInput("readon",["label"=>"Somente leitura", "value"=>["readon"=>"J
 
 print new HTMLInput("reqdes",["label"=>"Readonly e desativado", "value"=>["reqdes"=>"João"],"disabled", "readonly", "attributes"=>['test'=>'[name=reqdes][readonly][disabled]']]);
 
+print new HTMLSearch("ajax",["label"=>"Ajax test","value"=>["ajax"=>2], "display_value"=>"maria", "url"=>"testes/ajax/?q={query}", "attributes"=>['test'=>"js:$('#ajax').val() == 2 && $('#ajax_prompt').val() == 'maria'"]]);
+
+print new HTMLSearch("ajax2",["label"=>"Ajax display embutido","value"=>["ajax2"=>1, "ajax2_prompt"=>"pedro"], "url"=>"testes/ajax/?q={query}", "attributes"=>['test'=>"js:$('#ajax2').val() == 1 && $('#ajax2_prompt').val() == 'pedro'"]]);
+
+print new HTMLSelect("ajax3",["label"=>"Ajax Select em branco", "url"=>"testes/ajax/?q={query}" ,"attributes"=>['test'=>"js:$('[name=ajax3]').val() == ''"]]);
+
+print new HTMLSelect("ajax4",["label"=>"Ajax Select com value", "url"=>"testes/ajax/?q={query}", "value"=>["ajax4"=>2], "attributes"=>['test'=>"js:$('[name=ajax4]').val() == 2"]]);
+
 print new HTMLSelect("sel",["label"=>"Natural Select First not blank","options"=>[1=>"tipo1",2=>"tipo2"], "blank"=>false, "natural"=>true, "attributes"=>['test'=>"js:$('[name=sel]').val() == 1"]]);
 
-print new HTMLSelect("sel",["label"=>"Natural Select First blank","options"=>[1=>"tipo1",2=>"tipo2"], "natural"=>true, "attributes"=>['test'=>"js:$('[name=sel]').val() == 1"]]);
+print new HTMLSelect("sel2",["label"=>"Natural Select First blank","options"=>[1=>"tipo1",2=>"tipo2"], "natural"=>true, "attributes"=>['test'=>"js:$('[name=sel2]').val() == ''"]]);
 
 print new HTMLSelect("notsearch",["label"=>"Not searchable","options"=>[1=>"tipo1",2=>"tipo2"], "search"=>false ,"attributes"=>['test'=>"js:$('[name=sel]').val() == 1"]]);
 
@@ -37,6 +45,10 @@ print new HTMLCheckbox("chkbox3",["label"=>"Checkbox value simples","options"=>[
 print new HTMLRadio("radio1",["label"=>"Radio Tipo 1 checked","options"=>["tipo1","tipo2"],"value"=>["radio1"=>0], "required","id"=>"rad","class"=>"teste", "attributes"=>["test"=>"js:$('[name=radio1][type=radio]').eq(0).prop('checked')"]]);
 
 print new HTMLRadio("radio2",["label"=>"Radio nada marcado","options"=>["tipo1","tipo2"],"value"=>[], "id"=>"rad2", "attributes"=>["test"=>"js:$('#rad2_0').prop('checked') == false"]]);
+
+print new HTMLTextArea("texto",["label"=>"Textarea sem limite","value"=>["texto"=>"joao"], "attributes"=>["test"=>"textarea#texto"]]);
+
+print new HTMLTextArea("texto2",["label"=>"Textarea com limite","value"=>["texto2"=>"123456789"], "maxlength"=>10, "attributes"=>["test"=>"textarea#texto2[maxlength=10]"]]);
 
 #Values sem ser array
 print '<h4>Sizes and group</h4>';

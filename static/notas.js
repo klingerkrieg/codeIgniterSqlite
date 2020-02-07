@@ -1,11 +1,10 @@
 $(function(){
-
-    $('#disciplinaSearch').dropdown({
-        apiSettings: {
-            url: site_url + '/notas/disciplinas/{query}',
-            cache:false
-        },
+    
+    //define qual tipo de campo de autocompletar ficará ativo
+    $("[name=input]").change(function(){
+        toogleAjaxField();
     });
+    toogleAjaxField();
 
 
     //blur, quando sair do campo
@@ -47,3 +46,16 @@ $(function(){
     });
 
 });
+
+
+function toogleAjaxField(){
+    if ($('#input_0').prop("checked")){
+        $('#id_prompt').attr("disabled",false);
+        $("#disciplinaSearch").addClass("disabled");
+        $("#disciplinaSearch [type=hidden]").attr("disabled",true);
+    } else {
+        $('#id_prompt').attr("disabled",true);
+        $("#disciplinaSearch").removeClass("disabled");
+        $("#disciplinaSearch [type=hidden]").attr("disabled",false);
+    }
+}

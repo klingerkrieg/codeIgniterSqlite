@@ -123,10 +123,9 @@ class AbstractModel extends CI_Model {
 					if ($rel["table"] == $this->table){
 						$own = "own". ucfirst($field) . "List";
 						$arr = R::find($this->table,"{$field}_id = ?",[$obj->id]);
-						$obj->$own = $arr;
-						$assoc = $obj->fetchAs( $rel["table"] )->$field;
+						$obj->$own = $arr;#o redbean vai dar erro nessa linha
+						#vai tentar procurar uma tabela que nao existe
 					}
-					
 					
 					$assoc = $obj->fetchAs( $rel["table"] )->$field;
 				}
@@ -184,23 +183,40 @@ class AbstractModel extends CI_Model {
 	private function buildSimpleSearch($data){
 		$where = [];
 		$whereData = [];
-		foreach($data as $key=>$value){
+		foreach($data as $origkey=>$value){
+			$key = str_replace(" like","",$origkey);
 			if (in_array($key,$this->fields)){
-				array_push($where, "$key = ?");
-				array_push($whereData, $value);
+				if (stristr($origkey,"like")){
+					array_push($where, "$key like ?");
+					array_push($whereData, "%$value%");
+				} else {
+					array_push($where, "$key = ?");
+					array_push($whereData, $value);
+				}
 			}
 		}
 		$where = implode(" and ", $where);
+		
+		#sem teste
+		if (isset($data["order_by"])){
+			$where .= " ORDER BY {$data["order_by"]}";
+		}
+		
+		#sem teste
+		if (isset($data["limit"])){
+			$where .= " LIMIT {$data["limit"]}";
+		}
+
 		return [$where, $whereData];
 	}
 
-	#falta teste
+	#test: Coordenacao_model->findOne
 	public function findOne($data){
 		list($where, $whereData) = $this->buildSimpleSearch($data);
 		return R::findOne($this->table,$where,$whereData);
 	}
 
-	#falta teste
+	#test: Coordenacao_model->findAll (like)
 	public function findAll($data){
 		list($where, $whereData) = $this->buildSimpleSearch($data);
 		return R::find($this->table,$where,$whereData);

@@ -2,21 +2,39 @@
 
 
 <div class="ui message">
-<p>Aqui você encontrará como adicionar dados na tabela auxiliar de um relacionamento de Muitos para Muitos (Aluno x Disciplinas)</p>
-<p>Você também encontrará um exemplo de Ajax (arquivo: static/notas.js).</p>
+<p>Aqui você encontrará como adicionar dados na tabela auxiliar de um 
+	relacionamento de Muitos para Muitos (Aluno x Disciplinas)</p>
+<p>Você também encontrará dois exemplos de Ajax (arquivo: static/notas.js).
+	<ul>
+		<li>O primeiro exemplo são campos de autocompletar, temos um do tipo Search e outro do tipo Select</li>
+		<li>O segundo exemplo é uma demonstração de como fazer o ajax manualmente, no caso, para lançar as notas sem ter que submeter a página.</li>
+	</ul>
+</p>
 </div>
 
 
 
 
 <?php
+
 // formulario de busca
 print formStart("/notas", "GET");
 
 	print flashMessage();
 
+	print new HTMLRadio("input",["label"=>"Ajax tipo Search",
+								"options"=>[0=>"Ativar Search"],"value"=>$_GET]);
+
+	print new HTMLSearch("id",["label"=>"Disciplina",
+								"url"=>"/notas/disciplinas/?q={query}",
+								"value"=>$_GET]);
+
+	print new HTMLRadio("input",["id"=>"input2", "label"=>"Ajax tipo Select",
+								"options"=>[1=>"Ativar Select"],"value"=>$_GET]);
+
 	print new HTMLSelect("id",["id"=>"disciplinaSearch",
 								"label"=>"Disciplina",
+								"url"=>"/notas/disciplinas/?q={query}",
 								"value"=>$_GET]);
 	print new HTMLButton("Pesquisar");
 
