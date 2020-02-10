@@ -180,47 +180,43 @@ class AbstractModel extends CI_Model {
 		}
 	}
 
-	private function buildSimpleSearch($data){
+	public function findOne($data){
+		$data["limit"] = 1;
+		$list = $this->findAll($data);
+		if (count($list) > 0){
+			return $list[array_key_first($list)];
+		} else {
+			return [];
+		}
+	}
+
+	public function findAll($data){
+
 		$where = [];
-		$whereData = [];
-		foreach($data as $origkey=>$value){
-			$key = str_replace(" like","",$origkey);
-			if (in_array($key,$this->fields)){
-				if (stristr($origkey,"like")){
-					array_push($where, "$key like ?");
-					array_push($whereData, "%$value%");
-				} else {
-					array_push($where, "$key = ?");
-					array_push($whereData, $value);
-				}
+		$values = [];
+		$limit = "";
+		$order_by = "";
+		foreach($data as $key=>$val){
+			if ($key == "limit"){
+				$limit = " LIMIT $val";
+			} else
+			if ($key == "order_by"){
+				$order_by = " ORDER BY $val";
+			} else
+			if (stristr($key,"like")){
+				array_push($where," $key ? ");
+				array_push($values,"%$val%");
+			} else {
+				array_push($where," $key = ? ");
+				array_push($values,$val);
 			}
 		}
-		$where = implode(" and ", $where);
+
+		$where = implode(" AND ",$where);
 		
-		#sem teste
-		if (isset($data["order_by"])){
-			$where .= " ORDER BY {$data["order_by"]}";
-		}
-		
-		#sem teste
-		if (isset($data["limit"])){
-			$where .= " LIMIT {$data["limit"]}";
-		}
-
-		return [$where, $whereData];
+		return R::findAll($this->table, $where.$order_by.$limit, $values);
 	}
-
-	#test: Coordenacao_model->findOne
-	public function findOne($data){
-		list($where, $whereData) = $this->buildSimpleSearch($data);
-		return R::findOne($this->table,$where,$whereData);
-	}
-
-	#test: Coordenacao_model->findAll (like)
-	public function findAll($data){
-		list($where, $whereData) = $this->buildSimpleSearch($data);
-		return R::find($this->table,$where,$whereData);
-	}
+	
 
 	/**
 	 * Passe a string que será buscada ou um array com os campos e os valores a serem buscados

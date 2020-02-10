@@ -63,6 +63,8 @@ a{
 }
 
 
+
+
 /**
 
 Semantic FIX
@@ -81,15 +83,29 @@ Semantic FIX
     width:100%;
 }
 
-
 .ui.grid > * {
     padding-left:0px !important;
     padding-right:0px !important;
 }
 
+.ui.grid .message{
+    padding-left:5px !important;
+    padding-right:5px !important;
+}
+
 .ui.grid {
     margin-left:0px !important;
+    margin-right:0px !important;
 }
+
+.columnFields{
+    display:grid;
+}
+
+.dropdown .search{
+    width:100% !important;
+}
+
 /*.groupItemSpace{
     position: relative;
 }

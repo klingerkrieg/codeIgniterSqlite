@@ -1,5 +1,13 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
+if (!function_exists("pp")){
+    function pp($data){
+        print "<pre>";
+        print_r($data);
+        print "</pre>";
+    }
+}
+
 if (!function_exists("checked")){
     function checked($data, $field, $value){
         if (isset($data[$field]) && in_array($value,$data[$field])){

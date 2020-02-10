@@ -637,8 +637,8 @@ if (!function_exists("formStart")){
      * Ao final do formulário use a função formEnd();
      */
     function formStart($action,$method="POST",$options = []){
-        if (strstr($action,"/")){
-            $action = site_url().$action;
+        if (!strstr($action,"http")){
+            $action = site_url()."/".$action;
         }
         $grid = true;
         $class = "";
